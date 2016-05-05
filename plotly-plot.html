@@ -5,20 +5,20 @@ Polymer element for the plotly.js library
 
 Example:
 
-  <plotly-chart data="[2, 3]">
-  </plotly-chart>
+  <plotly-plot data="[2, 3]">
+  </plotly-plot>
 
 @demo demo/index.html
 -->
 
-<dom-module id="plotly-chart">
+<dom-module id="plotly-plot">
   <template>
     <div id="plot"></div>
   </template>
 
   <script>
     Polymer({
-      is: 'seed-element',
+      is: 'plotly-plot',
 
       properties: {
         data: {

@@ -1,4 +1,4 @@
-# plotly-chart
+# plotly-plot
 Polymer element for the plotly.js library
 
 
