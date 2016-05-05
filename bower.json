@@ -1,14 +1,15 @@
 {
-  "name": "seed-element",
-  "version": "1.0.7",
+  "name": "plotly-chart",
+  "version": "0.1.0",
   "authors": [
-    "Anonymous <anonymous@example.com>"
+    "Misha Wolfson <misha@ginkgobioworks.com>"
   ],
-  "description": "An element providing a solution to no problem in particular.",
+  "description": "An element providing an interface to the plotly.js library",
   "keywords": [
     "web-component",
     "polymer",
-    "seed"
+    "plotly",
+    "chart"
   ],
   "main": "seed-element.html",
   "license": "http://polymer.github.io/LICENSE.txt",
@@ -18,7 +19,8 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.2.0"
+    "polymer": "Polymer/polymer#^1.2.0",
+    "plotly.js": "^1.10.2"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
