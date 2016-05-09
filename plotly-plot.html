@@ -54,22 +54,37 @@ Example:
         Plotly.newPlot(this.$.plot, this.data, this.layout, this.config);
 
         // fire Polymer events in accordance with the plotly.js ones as well
-        this.$.plot.on('plotly_click', function (data) {
-          this.fire('plotly-click', {data: data});
-        });
-        this.$.plot.on('plotly_click', function (data) {
-          this.fire('plotly-click', {data: data});
-        });
-        this.$.plot.on('plotly_beforehover', function (data) {
-          this.fire('plotly-beforehover', {data: data});
-        });
-        this.$.plot.on('plotly_hover', function (data) {
-          this.fire('plotly-hover', {data: data});
-        });
-        this.$.plot.on('plotly_unhover', function (data) {
-          this.fire('plotly-unhover', {data: data});
-        });
+        this.$.plot.on('plotly_click', this._onPlotlyClick);
+        this.$.plot.on('plotly_beforehover', this._onPlotlyBeforeHover);
+        this.$.plot.on('plotly_hover', this._onPlotlyHover);
+        this.$.plot.on('plotly_unhover', this._onPlotlyUnHover);
       },
+
+      detached: function () {
+        // remove the attached Polymer events
+        this.$.plot.removeListner('plotly_click', this._onPlotlyClick);
+        this.$.plot.removeListner('plotly_beforehover', this._onPlotlyBeforeHover);
+        this.$.plot.removeListner('plotly_hover', this._onPlotlyHover);
+        this.$.plot.removeListner('plotly_unhover', this._onPlotlyUnHover);
+      },
+
+      // These event handlers need to be bound to variables because of
+      // event binding and unbinding upon attach/detach/reattach
+      _onPlotlyClick: function (data) {
+        this.fire('plotly-click', {data: data});
+      },
+
+      _onPlotlyBeforeHover: function (data) {
+        this.fire('plotly-beforehover', {data: data});
+      },
+
+      _onPlotlyHover: function (data) {
+        this.fire('plotly-hover', {data: data});
+      },
+
+      _onPlotlyUnHover: function (data) {
+        this.fire('plotly-unhover', {data: data});
+      }
     });
   </script>
 </dom-module>
