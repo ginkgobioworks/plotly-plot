@@ -9,7 +9,12 @@
     "web-component",
     "polymer",
     "plotly",
-    "chart"
+    "plotly.js",
+    "chart",
+    "plot",
+    "graph",
+    "graphing",
+    "plotting"
   ],
   "main": "seed-element.html",
   "license": "http://polymer.github.io/LICENSE.txt",
