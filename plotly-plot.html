@@ -80,6 +80,20 @@ Example:
         Plotly.layout(this.$.plot, layout);
       },
 
+      // Manipulate traces
+
+      addTraces: function (traces, index) {
+        Plotly.addTraces(this.$.plot, traces, index);
+      },
+
+      deleteTraces: function (traceIndices) {
+        Plotly.deleteTraces(this.$.plot, traceIndices);
+      },
+
+      moveTraces: function (traceIndicesFrom, traceIndicesTo) {
+        Plotly.moveTraces(this.$.plot, traceIndicesFrom, traceIndicesTo);
+      },
+
       // These event handlers need to be bound to variables because of
       // event binding and unbinding upon attach/detach/reattach
       _onPlotlyClick: function (data) {
