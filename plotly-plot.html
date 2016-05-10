@@ -47,11 +47,12 @@ Example:
       attached: function () {
         Plotly.newPlot(this.$.plot, this.data, this.layout, this.config);
 
+
         // fire Polymer events in accordance with the plotly.js ones as well
-        this.$.plot.on('plotly_click', this._onPlotlyClick);
-        this.$.plot.on('plotly_beforehover', this._onPlotlyBeforeHover);
-        this.$.plot.on('plotly_hover', this._onPlotlyHover);
-        this.$.plot.on('plotly_unhover', this._onPlotlyUnHover);
+        this.$.plot.on('plotly_click', this._onPlotlyClick.bind(this));
+        this.$.plot.on('plotly_beforehover', this._onPlotlyBeforeHover.bind(this));
+        this.$.plot.on('plotly_hover', this._onPlotlyHover.bind(this));
+        this.$.plot.on('plotly_unhover', this._onPlotlyUnHover.bind(this));
       },
 
       detached: function () {
