@@ -69,6 +69,9 @@ Example:
       // Refresh
 
       redraw: function () {
+        // For some reason, this class gets removed and plotly.js complains
+        this.toggleClass('js-plotly-plot', true, this.$.plot);
+
         this.$.plot.data = this.data;
         this.$.plot.layout = this.layout;
         this.$.plot.config = this.config;
