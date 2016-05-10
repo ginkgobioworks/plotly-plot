@@ -42,13 +42,7 @@ Example:
         },
       },
 
-      redraw: function () {
-        this.$.plot.data = this.data;
-        this.$.plot.layout = this.layout;
-        this.$.plot.config = this.config;
-
-        Plotly.redraw(this.$.plot);
-      },
+      // Life Cycle
 
       attached: function () {
         Plotly.newPlot(this.$.plot, this.data, this.layout, this.config);
@@ -66,6 +60,24 @@ Example:
         this.$.plot.removeListner('plotly_beforehover', this._onPlotlyBeforeHover);
         this.$.plot.removeListner('plotly_hover', this._onPlotlyHover);
         this.$.plot.removeListner('plotly_unhover', this._onPlotlyUnHover);
+      },
+
+      // Refresh
+
+      redraw: function () {
+        this.$.plot.data = this.data;
+        this.$.plot.layout = this.layout;
+        this.$.plot.config = this.config;
+
+        Plotly.redraw(this.$.plot);
+      },
+
+      restyle: function (style, traceIndices) {
+        Plotly.restyle(this.$.plot, style, traceIndices);
+      },
+
+      relayout: function (layout) {
+        Plotly.layout(this.$.plot, layout);
       },
 
       // These event handlers need to be bound to variables because of
