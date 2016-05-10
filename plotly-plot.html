@@ -45,6 +45,12 @@ Example:
         },
       },
 
+      observers: [
+        'redraw(data.*)',
+        'redraw(layout.*)',
+        'redraw(config.*)'
+      ],
+
       // Life Cycle
 
       attached: function () {
