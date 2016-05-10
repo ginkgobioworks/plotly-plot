@@ -27,14 +27,14 @@ Example:
           reflectToAttribute: true,
           notify: true,
           observer: 'redraw',
-          value: function () { return []; }
+          value: function () { return [{x: [], y: []}]; }
         },
         layout: {
           type: Object,
           reflectToAttribute: true,
           notify: true,
           observer: 'relayout',
-          value: function () { return {}; }
+          value: function () { return { height: 0, width: 0, title: '' }; }
         },
         config: {
           type: Object,
