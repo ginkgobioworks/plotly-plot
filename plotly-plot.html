@@ -23,22 +23,25 @@ Example:
 
       properties: {
         data: {
-          type: Object,
+          type: Array,
           reflectToAttribute: true,
           notify: true,
-          observer: 'redraw'
+          observer: 'redraw',
+          value: function () { return []; }
         },
         layout: {
           type: Object,
           reflectToAttribute: true,
           notify: true,
-          observer: 'redraw'
+          observer: 'relayout',
+          value: function () { return {}; }
         },
         config: {
           type: Object,
           reflectToAttribute: true,
           notify: true,
-          observer: 'redraw'
+          observer: 'redraw',
+          value: function () { return {}; }
         },
       },
 
