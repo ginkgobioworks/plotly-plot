@@ -12,37 +12,100 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>seed-element Demo</title>
+    <title>plotly-plot Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-    <link rel="import" href="../seed-element.html">
+    <link rel="import" href="../plotly-plot.html">
   </head>
   <body unresolved>
 
-    <p>An example of <code>&lt;seed-element&gt;</code>:</p>
+    <p>Hard-coded plot example:</p>
+    <plotly-plot id="first-plot"
+      data='[
+        {
+          "x": [1, 2, 3, 4],
+          "y": [10, 15, 13, 17],
+          "mode": "markers",
+          "type": "scatter"
+        },
+        {
+          "x": [2, 3, 4, 5],
+          "y": [16, 5, 11, 9],
+          "mode": "lines",
+          "type": "scatter"
+        },
+        {
+          "x": [1, 2, 3, 4],
+          "y": [12, 9, 15, 12],
+          "mode": "lines+markers",
+          "type": "scatter"
+        }
+      ]'
+      layout='
+        {
+          "title":"Line and Scatter Plot",
+          "height": 400,
+          "width": 480
+        }
+      '
+    >
+    </plotly-plot>
 
-    <p>Make words! <button id="saybtn">Say Something</button></p>
-    <p>Make lasers! <button id="laserbtn">Fire lasers</button></p>
+    <p>Second hard-coded plot example:</p>
+    <plotly-plot id="second-plot"
+      data='[
+        {
+          "x": [1, 2, 3, 4],
+          "y": [10, 15, 13, 17],
+          "mode": "markers",
+          "type": "scatter"
+        },
+        {
+          "x": [2, 3, 4, 5],
+          "y": [11, 17, 2, 4],
+          "mode": "lines",
+          "type": "scatter"
+        },
+        {
+          "x": [1, 2, 3, 4],
+          "y": [3, 4, 5, 6],
+          "mode": "lines+markers",
+          "type": "scatter"
+        }
+      ]'
+      layout='
+        {
+          "title":"Second Line and Scatter Plot",
+          "height": 400,
+          "width": 480
+        }
+      '
+    >
+    </plotly-plot>
 
-    <seed-element author='{"name": "Lord Meowser", "image": "http://lorempixel.com/g/300/200/cats/"}' fancy>
-      <h2>Hello seed-element</h2>
-    </seed-element>
-
-    <script>
-      var seedElement = document.querySelector('seed-element');
-
-      document.querySelector('#saybtn').addEventListener('click', function() {
-        alert(seedElement.sayHello('Hallo!'));
-      });
-
-      document.querySelector('#laserbtn').addEventListener('click', function() {
-        seedElement.fireLasers();
-      });
-
-      document.addEventListener("seed-element-lasers", function(e) {
-        console.log(e.detail.sound);
-      });
-
-    </script>
+    <p>Dynamically set plot example:</p>
+    <plotly-plot id="third-plot"></plotly-plot>
 
   </body>
+
+  <script>
+    (function () {
+      var plotEl = document.getElementById('third-plot');
+      plotEl.set('data', [
+        {
+          x: [1, 2, 3, 4],
+          y: [3, 4, 5, 6],
+          mode: 'lines+markers',
+          type: 'scatter'
+        }
+      ]);
+
+      plotEl.set('layout', {
+        title: 'Third Line and Scatter Plot',
+        height: 400,
+        width: 480
+      });
+
+      plotEl.set('data.0.y.2', 11);
+    })();
+  </script>
 </html>
