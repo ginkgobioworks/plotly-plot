@@ -54,7 +54,9 @@ Example:
       // Life Cycle
 
       attached: function () {
-        Plotly.newPlot(this.$.plot, this.data, this.layout, this.config);
+        var plotlyReturnValue = Plotly.newPlot(
+          this.$.plot, this.data, this.layout, this.config
+        );
 
         // These event handlers need to be bound to variables because of
         // event binding and unbinding upon attach/detach/reattach
@@ -63,15 +65,15 @@ Example:
         }.bind(this);
 
         this._onPlotlyBeforeHover = function (data) {
-          this.fire('plotly-beforehover', {data: data});
+          return this.fire('plotly-beforehover', {data: data});
         }.bind(this);
 
         this._onPlotlyHover = function (data) {
-          this.fire('plotly-hover', {data: data});
+          return this.fire('plotly-hover', {data: data});
         }.bind(this);
 
         this._onPlotlyUnHover = function (data) {
-          this.fire('plotly-unhover', {data: data});
+          return this.fire('plotly-unhover', {data: data});
         }.bind(this);
 
         // fire Polymer events in accordance with the plotly.js ones as well
@@ -79,6 +81,8 @@ Example:
         this.$.plot.on('plotly_beforehover', this._onPlotlyBeforeHover);
         this.$.plot.on('plotly_hover', this._onPlotlyHover);
         this.$.plot.on('plotly_unhover', this._onPlotlyUnHover);
+
+        return plotlyReturnValue;
       },
 
       detached: function () {
@@ -87,6 +91,8 @@ Example:
         this.$.plot.removeListner('plotly_beforehover', this._onPlotlyBeforeHover);
         this.$.plot.removeListner('plotly_hover', this._onPlotlyHover);
         this.$.plot.removeListner('plotly_unhover', this._onPlotlyUnHover);
+
+        return;
       },
 
       // Refresh
@@ -99,29 +105,54 @@ Example:
         this.$.plot.layout = this.layout;
         this.$.plot.config = this.config;
 
-        Plotly.redraw(this.$.plot);
+        return Plotly.redraw(this.$.plot);
       },
 
       restyle: function (style, traceIndices) {
-        Plotly.restyle(this.$.plot, style, traceIndices);
+        var plotlyReturnValue = Plotly.restyle(this.$.plot, style, traceIndices);
+
+        // Update the polymer properties to reflect the updated data
+        this.data = this.$.plot.data;
+
+        return plotlyReturnValue;
       },
 
       relayout: function (layoutUpdate) {
-        Plotly.relayout(this.$.plot, layoutUpdate);
+        var plotlyReturnValue = Plotly.relayout(this.$.plot, layoutUpdate);
+
+        // Update the polymer properties to reflect the updated data
+        this.layout = this.$.plot.layout;
+
+        return plotlyReturnValue;
       },
 
       // Manipulate traces
 
-      addTraces: function (traces, index) {
-        Plotly.addTraces(this.$.plot, traces, index);
+      addTraces: function (traces, traceIndices) {
+        var plotlyReturnValue = Plotly.addTraces(this.$.plot, traces, traceIndices);
+
+        // Update the polymer properties to reflect the updated data
+        this.data = this.$.plot.data;
+
+        return plotlyReturnValue;
       },
 
       deleteTraces: function (traceIndices) {
-        Plotly.deleteTraces(this.$.plot, traceIndices);
+        var plotlyReturnValue = Plotly.deleteTraces(this.$.plot, traceIndices);
+
+        // Update the polymer properties to reflect the updated data
+        this.data = this.$.plot.data;
+
+        return plotlyReturnValue;
       },
 
       moveTraces: function (traceIndicesFrom, traceIndicesTo) {
-        Plotly.moveTraces(this.$.plot, traceIndicesFrom, traceIndicesTo);
+        var plotlyReturnValue = Plotly.moveTraces(this.$.plot, traceIndicesFrom, traceIndicesTo);
+
+        // Update the polymer properties to reflect the updated data
+        this.data = this.$.plot.data;
+
+        return plotlyReturnValue;
       },
 
     });
