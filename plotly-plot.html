@@ -4,10 +4,24 @@
 <!--
 Polymer element for the plotly.js library
 
-Example:
+Example: a hard-coded plot
 
-  <plotly-plot data="[2, 3]">
-  </plotly-plot>
+   <plotly-plot data='[{"x": [1, 2, 3], "y": [4, 11, 23]}]'>
+   </plotly-plot>
+
+Example: a dynamically-set plot
+
+   <plotly-plot id="the-plot"></plotly-plot>
+   <script>
+      var plotElement = document.getElementById('the-plot');
+      plotElement.set('data.0', {x: [1, 2, 3], y: [19, 3, 11]});
+   </script>
+
+If you are changing the parameters dynamically, make sure to use `.set` or the
+plot will not update.
+
+@see the {@link https://plot.ly/javascript/reference/|plotly.js docs} for a full explanation
+     of the `data`, `layout` and `config` parameters.
 
 @demo demo/index.html
 -->
@@ -22,6 +36,14 @@ Example:
       is: 'plotly-plot',
 
       properties: {
+        /**
+         * The data and parameters of each of the traces * to be plotted. An
+         * array of nested object that significantly depends * on the plot type,
+         * etc.
+         *
+         * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
+         * @type { Object[] }
+         */
         data: {
           type: Array,
           reflectToAttribute: true,
@@ -29,6 +51,14 @@ Example:
           observer: 'redraw',
           value: function () { return [{x: [], y: []}]; }
         },
+
+        /**
+         * Settings for the layout of the plot as  a whole:
+         * width, height, title, etc.
+         *
+         * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
+         * @type { Object }
+         */
         layout: {
           type: Object,
           reflectToAttribute: true,
@@ -36,6 +66,15 @@ Example:
           observer: 'relayout',
           value: function () { return { height: 0, width: 0, title: '' }; }
         },
+
+        /**
+         * Top-level configurations for features in the library: whether or
+         * not to show the toolbar, plot.ly icon, whether or not to make the
+         * plot static, etc.
+         *
+         * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
+         * @type { Object }
+         */
         config: {
           type: Object,
           reflectToAttribute: true,
@@ -46,37 +85,73 @@ Example:
       },
 
       observers: [
+        // Redraw the plot after any of the nested data in the properties change
         'redraw(data.*)',
         'redraw(layout.*)',
         'redraw(config.*)'
       ],
 
+
       // Life Cycle
 
+      /**
+       * When the element is attached, create the plot, and bind the Polymer
+       * wrapper events to the plotly custom events.
+       *
+       * @return {?} whatever Plotly.newPlot returns
+       */
       attached: function () {
         var plotlyReturnValue = Plotly.newPlot(
           this.$.plot, this.data, this.layout, this.config
         );
 
+        // Fire Polymer events in accordance with the plotly.js ones as well.
         // These event handlers need to be bound to variables because of
         // event binding and unbinding upon attach/detach/reattach
+
+        /**
+         * Custom plotly-specific click event for tracking clicks on the chart.
+         *
+         * @event plotly-click
+         */
         this._onPlotlyClick = function (data) {
           this.fire('plotly-click', {data: data});
         }.bind(this);
 
+        /**
+         * Custom plotly-specific event for tracking hovers on the chart.
+         * Fires before the hover happens.
+         *
+         * @event plotly-beforehover
+         * @see the {@link https://plot.ly/javascript/hover-events/|hover events tutorial}
+         */
         this._onPlotlyBeforehover = function (data) {
           return this.fire('plotly-beforehover', {data: data});
         }.bind(this);
 
+        /**
+         * Custom plotly-specific event for tracking hovers on the chart.
+         * Fires during the hover.
+         *
+         * @event plotly-hover
+         * @see the {@link https://plot.ly/javascript/hover-events/|hover events tutorial}
+         */
         this._onPlotlyHover = function (data) {
           return this.fire('plotly-hover', {data: data});
         }.bind(this);
 
+        /**
+         * Custom plotly-specific event for tracking hovers on the chart.
+         * Fires when the hover ends.
+         *
+         * @event plotly-unhover
+         * @see the {@link https://plot.ly/javascript/hover-events/|hover events tutorial}
+         */
         this._onPlotlyUnhover = function (data) {
           return this.fire('plotly-unhover', {data: data});
         }.bind(this);
 
-        // fire Polymer events in accordance with the plotly.js ones as well
+        // Attach the polymer events to the plotly events.
         this.$.plot.on('plotly_click', this._onPlotlyClick);
         this.$.plot.on('plotly_beforehover', this._onPlotlyBeforehover);
         this.$.plot.on('plotly_hover', this._onPlotlyHover);
@@ -85,22 +160,43 @@ Example:
         return plotlyReturnValue;
       },
 
+      /**
+       * When the element is attached, create the plot, and bind the Polymer
+       * wrapper events to the plotly custom events.
+       *
+       * @return {Void}
+       */
       detached: function () {
-        // remove the attached Polymer events
+        // Remove the attached Polymer events
         this.$.plot.removeListner('plotly_click', this._onPlotlyClick);
-        this.$.plot.removeListner('plotly_beforehover', this._onPlotlyBeforeHover);
+        this.$.plot.removeListner('plotly_beforehover', this._onPlotlyBeforehover);
         this.$.plot.removeListner('plotly_hover', this._onPlotlyHover);
-        this.$.plot.removeListner('plotly_unhover', this._onPlotlyUnHover);
+        this.$.plot.removeListner('plotly_unhover', this._onPlotlyUnhover);
 
         return;
       },
 
-      // Refresh
 
+      // Update the plot to reflect new data
+
+
+
+      /**
+       * Redraw the plot using the current state of the widget's properties.
+       *
+       * This should happen automatically if you use `.set`, but if you want to
+       * do a lot of manipulation in multiple steps and then redraw at the end,
+       * call this method.
+       *
+       * @return {?} whatever Plotly.redraw returns
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
       redraw: function () {
         // For some reason, this class gets removed and plotly.js complains
         this.toggleClass('js-plotly-plot', true, this.$.plot);
 
+        // Set the plot data, layout, and config state to reflect the current
+        // state of the polymer properties
         this.$.plot.data = this.data;
         this.$.plot.layout = this.layout;
         this.$.plot.config = this.config;
@@ -108,6 +204,13 @@ Example:
         return Plotly.redraw(this.$.plot);
       },
 
+      /**
+       * Restyle the plot with updates to all (or a specified subset of) the
+       * traces.
+       *
+       * @return {?} whatever Plotly.restyle returns
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
       restyle: function (style, traceIndices) {
         var plotlyReturnValue = Plotly.restyle(this.$.plot, style, traceIndices);
 
@@ -117,6 +220,12 @@ Example:
         return plotlyReturnValue;
       },
 
+      /**
+       * Update the plot layout.
+       *
+       * @return {?} whatever Plotly.relayout returns
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
       relayout: function (layoutUpdate) {
         var plotlyReturnValue = Plotly.relayout(this.$.plot, layoutUpdate);
 
@@ -126,8 +235,21 @@ Example:
         return plotlyReturnValue;
       },
 
+
       // Manipulate traces
 
+      /**
+       * Add traces to the plot in the specified indices, if provided.
+       *
+       * @param {(Object|Object[])} traces an individual trace, as an object of
+       *                            trace information, or an array of those traces
+       *
+       * @param {(number|number[])=} traceIndices an individual index or an array of
+       *                             indices specifying where to add the traces
+       *
+       * @return {?} whatever Plotly.addTraces returns
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
       addTraces: function (traces, traceIndices) {
         var plotlyReturnValue = Plotly.addTraces(this.$.plot, traces, traceIndices);
 
@@ -137,6 +259,15 @@ Example:
         return plotlyReturnValue;
       },
 
+      /**
+       * Delete the specified traces from the plot.
+       *
+       * @param {(number|number[])=} traceIndices an individual index or an array of
+       *                             indices specifying which traces to delete
+       *
+       * @return {?} whatever Plotly.deleteTraces returns
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
       deleteTraces: function (traceIndices) {
         var plotlyReturnValue = Plotly.deleteTraces(this.$.plot, traceIndices);
 
@@ -146,6 +277,19 @@ Example:
         return plotlyReturnValue;
       },
 
+      /**
+       * Move a specified set traces from the plot to a newly specified set of
+       * destination trace positions.
+       *
+       * @param {(number|number[])=} traceIndicesFrom an individual index or an array of
+       *                             indices specifying which traces to move
+       *
+       * @param {(number|number[])=} traceIndicesTo an individual index or an array of
+       *                             indices specifying where the traces should move
+
+       * @return {?} whatever Plotly.deleteTraces returns
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
       moveTraces: function (traceIndicesFrom, traceIndicesTo) {
         var plotlyReturnValue = Plotly.moveTraces(this.$.plot, traceIndicesFrom, traceIndicesTo);
 
