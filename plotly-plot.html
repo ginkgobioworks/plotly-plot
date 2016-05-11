@@ -56,12 +56,29 @@ Example:
       attached: function () {
         Plotly.newPlot(this.$.plot, this.data, this.layout, this.config);
 
+        // These event handlers need to be bound to variables because of
+        // event binding and unbinding upon attach/detach/reattach
+        this._onPlotlyClick = function (data) {
+          this.fire('plotly-click', {data: data});
+        }.bind(this);
+
+        this._onPlotlyBeforeHover = function (data) {
+          this.fire('plotly-beforehover', {data: data});
+        }.bind(this);
+
+        this._onPlotlyHover = function (data) {
+          this.fire('plotly-hover', {data: data});
+        }.bind(this);
+
+        this._onPlotlyUnHover = function (data) {
+          this.fire('plotly-unhover', {data: data});
+        }.bind(this);
 
         // fire Polymer events in accordance with the plotly.js ones as well
-        this.$.plot.on('plotly_click', this._onPlotlyClick.bind(this));
-        this.$.plot.on('plotly_beforehover', this._onPlotlyBeforeHover.bind(this));
-        this.$.plot.on('plotly_hover', this._onPlotlyHover.bind(this));
-        this.$.plot.on('plotly_unhover', this._onPlotlyUnHover.bind(this));
+        this.$.plot.on('plotly_click', this._onPlotlyClick);
+        this.$.plot.on('plotly_beforehover', this._onPlotlyBeforeHover);
+        this.$.plot.on('plotly_hover', this._onPlotlyHover);
+        this.$.plot.on('plotly_unhover', this._onPlotlyUnHover);
       },
 
       detached: function () {
@@ -107,23 +124,6 @@ Example:
         Plotly.moveTraces(this.$.plot, traceIndicesFrom, traceIndicesTo);
       },
 
-      // These event handlers need to be bound to variables because of
-      // event binding and unbinding upon attach/detach/reattach
-      _onPlotlyClick: function (data) {
-        this.fire('plotly-click', {data: data});
-      },
-
-      _onPlotlyBeforeHover: function (data) {
-        this.fire('plotly-beforehover', {data: data});
-      },
-
-      _onPlotlyHover: function (data) {
-        this.fire('plotly-hover', {data: data});
-      },
-
-      _onPlotlyUnHover: function (data) {
-        this.fire('plotly-unhover', {data: data});
-      }
     });
   </script>
 </dom-module>
