@@ -64,7 +64,7 @@ Example:
           this.fire('plotly-click', {data: data});
         }.bind(this);
 
-        this._onPlotlyBeforeHover = function (data) {
+        this._onPlotlyBeforehover = function (data) {
           return this.fire('plotly-beforehover', {data: data});
         }.bind(this);
 
@@ -72,15 +72,15 @@ Example:
           return this.fire('plotly-hover', {data: data});
         }.bind(this);
 
-        this._onPlotlyUnHover = function (data) {
+        this._onPlotlyUnhover = function (data) {
           return this.fire('plotly-unhover', {data: data});
         }.bind(this);
 
         // fire Polymer events in accordance with the plotly.js ones as well
         this.$.plot.on('plotly_click', this._onPlotlyClick);
-        this.$.plot.on('plotly_beforehover', this._onPlotlyBeforeHover);
+        this.$.plot.on('plotly_beforehover', this._onPlotlyBeforehover);
         this.$.plot.on('plotly_hover', this._onPlotlyHover);
-        this.$.plot.on('plotly_unhover', this._onPlotlyUnHover);
+        this.$.plot.on('plotly_unhover', this._onPlotlyUnhover);
 
         return plotlyReturnValue;
       },
