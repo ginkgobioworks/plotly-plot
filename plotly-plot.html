@@ -175,10 +175,10 @@ of the `data`, `layout` and `config` properties.
        */
       detached: function () {
         // Remove the attached Polymer events
-        this.$.plot.removeListner('plotly_click', this._onPlotlyClick);
-        this.$.plot.removeListner('plotly_beforehover', this._onPlotlyBeforehover);
-        this.$.plot.removeListner('plotly_hover', this._onPlotlyHover);
-        this.$.plot.removeListner('plotly_unhover', this._onPlotlyUnhover);
+        this.$.plot.removeListener('plotly_click', this._onPlotlyClick);
+        this.$.plot.removeListener('plotly_beforehover', this._onPlotlyBeforehover);
+        this.$.plot.removeListener('plotly_hover', this._onPlotlyHover);
+        this.$.plot.removeListener('plotly_unhover', this._onPlotlyUnhover);
 
         return;
       },
