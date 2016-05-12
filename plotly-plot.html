@@ -6,22 +6,27 @@ Polymer element for the plotly.js library
 
 Example: a hard-coded plot
 
-   <plotly-plot data='[{"x": [1, 2, 3], "y": [4, 11, 23]}]'>
-   </plotly-plot>
+```html
+<plotly-plot data='[{"x": [1, 2, 3], "y": [4, 11, 23]}]'>
+</plotly-plot>
+```
 
 Example: a dynamically-set plot
 
-   <plotly-plot id="the-plot"></plotly-plot>
-   <script>
-      var plotElement = document.getElementById('the-plot');
-      plotElement.set('data.0', {x: [1, 2, 3], y: [19, 3, 11]});
-   </script>
+```html
+<plotly-plot id="the-plot"></plotly-plot>
+<script>
+   var plotElement = document.getElementById('the-plot');
+   plotElement.set('data.0', {x: [1, 2, 3], y: [19, 3, 11]});
+</script>
+```
 
-If you are changing the parameters dynamically, make sure to use `.set` or the
-plot will not update.
+If you are changing the parameters dynamically and want your changes reflected
+immediately, make sure to use `.set` or the plot will not update. Conversely,
+change several parameters, and then call `.redraw`.
 
-@see the {@link https://plot.ly/javascript/reference/|plotly.js docs} for a full explanation
-     of the `data`, `layout` and `config` parameters.
+See the [plotly.js docs](https://plot.ly/javascript/reference/) for a full explanation
+of the `data`, `layout` and `config` properties.
 
 @demo demo/index.html
 -->
@@ -39,8 +44,8 @@ plot will not update.
 
       properties: {
         /**
-         * The data and parameters of each of the traces * to be plotted. An
-         * array of nested object that significantly depends * on the plot type,
+         * The data and parameters of each of the traces to be plotted. An
+         * array of nested object that significantly depends on the plot type,
          * etc.
          *
          * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
