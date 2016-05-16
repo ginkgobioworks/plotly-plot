@@ -1,68 +1,96 @@
 # plotly-plot
-Polymer element for the plotly.js library
 
+Polymer element for the [plotly.js](https://plot.ly/javascript/) library.
 
-## Dependencies
+`<plotly-plot>` provides a thin, fully-functional interface to the core of the
+library. The key properties of the plot, `data`, `layout`, and `config`, are
+all exposed as Polymer properties; updates to these properties via `.set` will
+automatically trigger redrawing.
 
-Element dependencies are managed via [Bower](http://bower.io/). You can
-install that via:
+All of the update methods provided with plotly.js have been exposed:
+`redraw`, `restyle`, and `relayout`. The other methods are also
+available for dynamic updates: `addTraces`, `deleteTraces`, and `moveTraces`.
+
+Finally, the custom plotly-specific events are also replicated as polymer
+events.
+
+For thorough documentation, visit the
+[project homepage](https://ginkgobioworks.github.io/plotly-plot).
+
+## Using plotly-plot
+
+Install the element with Bower by adding it to your project's dependencies.
+
+Import the element into your project by using an HTML import, as with any other
+Polymer element:
+
+```html
+<link rel="import" href="../paper-button/paper-button.html">
+```
+
+## Developing/contributing to `plotly-plot`
+
+### Installing Dependencies
+
+Element dependencies are managed via [Bower](http://bower.io/).
+
+Installing Bower:
 
     npm install -g bower
 
-Then, go ahead and download the element's dependencies:
+Installing dependencies:
 
     bower install
 
 
-## Linting Your Element
+### Linting
 
-If you wish to lint your element, we recommend that you use
-[Polylint](https://github.com/PolymerLabs/polylint) to take into account Polymer
-linting specificities. You can install it via:
+[Polylint](https://github.com/PolymerLabs/polylint) can be used to take into
+account Polymer linting specificities.
+
+Installing Polylint:
 
     npm install -g polylint
 
-And you can run it via:
+Running Polylint:
 
-	polylint -i seed-element.html
+	polylint -i polymer-plot.html
 
-If your element contains errors, they will appear on the console.
-
-Note that it is possible to use `Polylint` with Atom and Sublime with the appropriate package/plugin.
-
-For more options regarding `polylint`, please refer to the
-[documentation](https://github.com/PolymerLabs/polylint#polylint).
+Polylint [documentation](https://github.com/PolymerLabs/polylint#polylint).
 
 
-## Playing With Your Element
+### Dev server
 
-If you wish to work on your element in isolation, we recommend that you use
-[Polyserve](https://github.com/PolymerLabs/polyserve) to keep your element's
-bower dependencies in line. You can install it via:
+[Polyserve](https://github.com/PolymerLabs/polyserve) makes it easy to use the
+element while keeping bower dependencies in line. It works well as a development
+server.
+
+Installing Polyserve:
 
     npm install -g polyserve
 
-And you can run it via:
+Running Polyserve:
 
     polyserve
 
-Once running, you can preview your element at
-`http://localhost:8080/components/seed-element/`, where `seed-element` is the name of the directory containing it.
+Once running, `http://localhost:8080/components/plotly-plot/`, shows the
+index page of the element.
 
 
-## Testing Your Element
+### Testing
 
-Simply navigate to the `/test` directory of your element to run its tests. If
-you are using Polyserve: `http://localhost:8080/components/seed-element/test/`
+Navigate to `http://localhost:8080/components/plotly-plot/test/` (as served
+by Polyserve) to run the tests.
 
 ### web-component-tester
 
 The tests are compatible with [web-component-tester](https://github.com/Polymer/web-component-tester).
-Install it via:
+
+Installing `web-component-testser`:
 
     npm install -g web-component-tester
 
-Then, you can run your tests on _all_ of your local browsers via:
+Running all tests on chrome:
 
     wct
 
@@ -73,8 +101,3 @@ Then, you can run your tests on _all_ of your local browsers via:
 `wct -p` will keep the browsers alive after test runs (refresh to re-run).
 
 `wct test/some-file.html` will test only the files you specify.
-
-
-## Yeoman support
-
-If you'd like to use Yeoman to scaffold your element that's possible. The official [`generator-polymer`](https://github.com/yeoman/generator-polymer) generator has a [`seed`](https://github.com/yeoman/generator-polymer#seed) subgenerator.
