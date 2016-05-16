@@ -16,9 +16,9 @@
     "graphing",
     "plotting"
   ],
-  "main": "seed-element.html",
+  "main": "plotly-plot.html",
   "license": "http://polymer.github.io/LICENSE.txt",
-  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "homepage": "https://ginkgobioworks.github.io/plotly-plot/",
   "ignore": [
     "/.*",
     "/test/"
