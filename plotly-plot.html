@@ -186,8 +186,6 @@ of the `data`, `layout` and `config` properties.
 
       // Update the plot to reflect new data
 
-
-
       /**
        * Redraw the plot using the current state of the widget's properties.
        *
@@ -261,7 +259,7 @@ of the `data`, `layout` and `config` properties.
         var plotlyReturnValue = Plotly.addTraces(this.$.plot, traces, traceIndices);
 
         // Update the polymer properties to reflect the updated data
-        this.data = this.$.plot.data;
+        this.set('data', this.$.plot.data);
 
         return plotlyReturnValue;
       },
@@ -279,7 +277,7 @@ of the `data`, `layout` and `config` properties.
         var plotlyReturnValue = Plotly.deleteTraces(this.$.plot, traceIndices);
 
         // Update the polymer properties to reflect the updated data
-        this.data = this.$.plot.data;
+        this.set('data', this.$.plot.data);
 
         return plotlyReturnValue;
       },
@@ -301,7 +299,7 @@ of the `data`, `layout` and `config` properties.
         var plotlyReturnValue = Plotly.moveTraces(this.$.plot, traceIndicesFrom, traceIndicesTo);
 
         // Update the polymer properties to reflect the updated data
-        this.data = this.$.plot.data;
+        this.set('data', this.$.plot.data);
 
         return plotlyReturnValue;
       },
