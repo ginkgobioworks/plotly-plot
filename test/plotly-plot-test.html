@@ -17,52 +17,244 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../web-component-tester/browser.js"></script>
 
     <!-- Step 1: import the element to test -->
-    <link rel="import" href="../seed-element.html">
+    <link rel="import" href="../plotly-plot.html">
   </head>
   <body>
-
-    <!-- You can use the document as a place to set up your fixtures. -->
-    <test-fixture id="seed-element-fixture">
+    <test-fixture id="plotly-plot-fixture-hardcoded">
       <template>
-        <seed-element>
-          <h2>seed-element</h2>
-        </seed-element>
+        <plotly-plot id="hard-coded-plot"
+          data='[
+            {
+              "x": [1, 2, 3, 4],
+              "y": [10, 15, 13, 17],
+              "mode": "markers",
+              "type": "scatter"
+            },
+            {
+              "x": [2, 3, 4, 5],
+              "y": [16, 5, 11, 9],
+              "mode": "lines",
+              "type": "scatter"
+            },
+            {
+              "x": [1, 2, 3, 4],
+              "y": [12, 9, 15, 12],
+              "mode": "lines+markers",
+              "type": "scatter"
+            }
+          ]'
+          layout='
+            {
+              "title":"Line and Scatter Plot",
+              "height": 400,
+              "width": 480
+            }
+          '
+        >
+        </plotly-plot>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="plotly-plot-fixture-empty">
+      <template>
+        <plotly-plot id="empty-plot"></plotly-plot>
       </template>
     </test-fixture>
 
     <script>
-      suite('<seed-element>', function() {
+      describe('<plotly-plot>', function () {
+        var hardcodedPlot;
+        var emptyPlot;
+        var sandbox;
 
-        var myEl;
-
-        setup(function() {
-          myEl = fixture('seed-element-fixture');
+        beforeEach(function () {
+          hardcodedPlot = fixture('plotly-plot-fixture-hardcoded');
+          emptyPlot = fixture('plotly-plot-fixture-empty');
+          sandbox = sinon.sandbox.create();
         });
 
-        test('defines the "author" property', function() {
-          assert.equal(myEl.author.name, 'Dimitri Glazkov');
-          assert.equal(myEl.author.image, 'http://addyosmani.com/blog/wp-content/uploads/2013/04/unicorn.jpg');
+        afterEach(function () {
+          sandbox.restore();
         });
 
-        test('says hello', function() {
-          assert.equal(myEl.sayHello(), 'seed-element says, Hello World!');
 
-          var greetings = myEl.sayHello('greetings Earthlings');
-          assert.equal(greetings, 'seed-element says, greetings Earthlings');
-        });
-
-        test('fires lasers', function(done) {
-          myEl.addEventListener('seed-element-lasers', function(event) {
-            assert.equal(event.detail.sound, 'Pew pew!');
-            done();
+        describe('#redraw', function () {
+          it('should not throw an error', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              expect(polymerPlot.redraw.bind(hardcodedPlot)).to.not.throw();
+            });
           });
-          myEl.fireLasers();
+
+          it('should update the data idempotently', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              var values = [4, 11, 23, 14];
+              polymerPlot.set('data.0.x', values);
+              expect(polymerPlot.$.plot.data[0].x).to.deep.equal(values);
+              polymerPlot.redraw()
+              expect(polymerPlot.$.plot.data[0].x).to.deep.equal(values);
+            });
+          });
+
+          it('should redraw on data update', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              var values = [4, 11, 23, 14];
+              sandbox.stub(polymerPlot, 'redraw');
+              polymerPlot.set('data.0.x', values);
+              expect(polymerPlot.redraw.called).to.be.ok;
+            });
+          });
+
+          it('should redraw on nested layout update', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              sandbox.stub(polymerPlot, 'redraw');
+              polymerPlot.set('layout.title', 'New title');
+              expect(polymerPlot.redraw.called).to.be.ok;
+            });
+          });
+
+          it('should redraw on nested config update', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              sandbox.stub(polymerPlot, 'redraw');
+              polymerPlot.set('config.showLink', false);
+              expect(polymerPlot.redraw.called).to.be.ok;
+            });
+          });
         });
 
-        test('distributed children', function() {
-          var els = myEl.getContentChildren();
-          assert.equal(els.length, 1, 'one distributed node');
-          assert.equal(els[0], myEl.querySelector('h2'), 'content distributed correctly');
+        describe('#restyle', function () {
+          it('should update all traces by default', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              polymerPlot.restyle({mode: 'lines'});
+
+              _(polymerPlot.data).forEach(function (trace) {
+                expect(trace.mode).to.equal('lines');
+              });
+
+            });
+          });
+
+          it('should update specific traces by index', function () {
+            hardcodedPlot.restyle({mode: 'lines'}, 0);
+            expect(hardcodedPlot.data[0].mode).to.equal('lines');
+            expect(hardcodedPlot.data[2].mode).to.not.equal('lines');
+          });
+
+          it('should update specific traces by index list', function () {
+            var traceIndices = [0, 2];
+
+            hardcodedPlot.restyle({mode: 'lines'}, traceIndices);
+            hardcodedPlot.restyle({mode: 'markers'}, 1);
+
+            _(traceIndices).forEach(function (traceIndex) {
+              expect(hardcodedPlot.data[traceIndex].mode).to.equal('lines');
+            });
+            expect(hardcodedPlot.data[1].mode).to.equal('markers');
+          });
+        });
+
+        describe('#relayout', function () {
+          it('should update the layout property', function () {
+            var newTitle = 'Some other new title';
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              polymerPlot.relayout({title: newTitle});
+              expect(polymerPlot.layout.title).to.equal(newTitle);
+            });
+          });
+        });
+
+        describe('#addTraces', function () {
+          var newTrace = {
+            x: [1, 2, 3, 4],
+            y: [22, 9, 5, 11],
+            mode: 'lines+markers',
+            type: 'scatter',
+          };
+
+          it('should add individual traces to the end by default', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              var data = polymerPlot.data;
+              polymerPlot.addTraces(newTrace);
+              expect(data[data.length - 1]).to.deep.equal(newTrace);
+            });
+          });
+
+          it('should add individual traces by index', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              var data = polymerPlot.data;
+              var oldHeadTrace = data[0];
+
+              polymerPlot.addTraces(newTrace, 0);
+              expect(data[0]).to.deep.equal(newTrace);
+              expect(data[1]).to.deep.equal(oldHeadTrace);
+            });
+          });
+
+          it('should add lists of traces by index', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              var addTraceIndices = [0, 1];
+              var newTraces = [newTrace, newTrace];
+
+              polymerPlot.addTraces(newTraces, addTraceIndices);
+              _(addTraceIndices).forEach(function (traceIndex, iterationIndex) {
+                expect(plotlyPlot.data[traceIndex]).to.deep.equal(newTraces[iterationIndex]);
+              });
+            });
+          });
+
+          it('should redraw', function () {
+            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+              sandbox.stub(polymerPlot, 'redraw');
+              polymerPlot.addTraces(newTrace);
+              expect(polymerPlot.redraw.called).to.be.ok;
+            });
+          });
+        });
+
+        describe('#deleteTraces', function () {
+          it('should lower the length of the data property', function () {
+            var oldLength = hardcodedPlot.data.length;
+            hardcodedPlot.deleteTraces(0);
+            expect(hardcodedPlot.data.length).to.equal(oldLength - 1);
+          });
+
+          it('should delete the trace from the data property', function () {
+            var deletedTrace = hardcodedPlot.data[0];
+            hardcodedPlot.deleteTraces(0);
+            _(hardcodedPlot.data).forEach(function (trace) {
+              expect(trace).to.not.deep.equal(deletedTrace);
+            });
+          });
+
+          it('should not call redraw', function () {
+            sandbox.stub(hardcodedPlot, 'redraw');
+            hardcodedPlot.deleteTraces(0);
+            expect(hardcodedPlot.redraw.called).to.not.be.ok;
+          });
+        });
+
+        describe('#moveTraces', function () {
+          it('should not change the length of the data property', function () {
+            var oldLength = hardcodedPlot.data.length;
+            hardcodedPlot.moveTraces(0);
+            expect(hardcodedPlot.data.length).to.equal(oldLength);
+          });
+
+          it('should update the data property', function () {
+            var movedTraces = hardcodedPlot.data.slice(1);
+            movedTraces.push(hardcodedPlot.data[0]);
+
+            hardcodedPlot.moveTraces(0);
+
+            _(hardcodedPlot.data).forEach(function (trace, traceIndex) {
+              expect(trace).to.deep.equal(movedTraces[traceIndex]);
+            });
+          });
+
+          it('should call redraw', function () {
+            sandbox.stub(hardcodedPlot, 'redraw');
+            hardcodedPlot.moveTraces(0);
+            expect(hardcodedPlot.redraw.called).to.be.ok;
+          });
         });
 
       });
