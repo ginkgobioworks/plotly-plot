@@ -101,3 +101,8 @@ Running all tests on chrome:
 `wct -p` will keep the browsers alive after test runs (refresh to re-run).
 
 `wct test/some-file.html` will test only the files you specify.
+
+### NPM
+
+This project contains a `package.json` file which contains all of the necessary
+dependencies and scripts to make it easy to install and run with `npm` as well.
