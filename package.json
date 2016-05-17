@@ -1,6 +1,6 @@
 {
   "name": "plotly-plot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Misha Wolfson <misha@ginkgobioworks.com>",
   "description": "A Polymer element providing an interface to the plotly.js library",
   "repository": {
