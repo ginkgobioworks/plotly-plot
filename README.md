@@ -11,7 +11,7 @@ All of the update methods provided with plotly.js have been exposed:
 `redraw`, `restyle`, and `relayout`. The other methods are also
 available for dynamic updates: `addTraces`, `deleteTraces`, and `moveTraces`.
 
-Finally, the custom plotly-specific events are also replicated as polymer
+Finally, the custom plotly-specific events are also replicated as Polymer
 events.
 
 For thorough documentation, visit the
@@ -19,7 +19,8 @@ For thorough documentation, visit the
 
 ## Using plotly-plot
 
-Install the element with Bower by adding it to your project's dependencies.
+Install the element with Bower by adding it to your project's dependencies in
+`bower.json`.
 
 Import the element into your project by using an HTML import, as with any other
 Polymer element:

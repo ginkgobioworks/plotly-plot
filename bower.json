@@ -4,7 +4,7 @@
   "authors": [
     "Misha Wolfson <misha@ginkgobioworks.com>"
   ],
-  "description": "An element providing an interface to the plotly.js library",
+  "description": "A Polymer element providing an interface to the plotly.js library",
   "keywords": [
     "web-component",
     "polymer",

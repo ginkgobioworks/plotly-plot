@@ -2,7 +2,7 @@
   "name": "plotly-plot",
   "version": "0.1.0",
   "author": "Misha Wolfson <misha@ginkgobioworks.com>",
-  "description": "An element providing an interface to the plotly.js library",
+  "description": "A Polymer element providing an interface to the plotly.js library",
   "repository": {
     "type": "git",
     "url": "git@github.com:ginkgobioworks/plotly-plot.git"
