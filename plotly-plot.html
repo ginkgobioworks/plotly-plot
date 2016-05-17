@@ -105,7 +105,7 @@ of the `data`, `layout` and `config` properties.
        * When the element is attached, create the plot, and bind the Polymer
        * wrapper events to the plotly custom events.
        *
-       * @return {?} whatever Plotly.newPlot returns
+       * @return {Promise} a Promise for the asynchronous plot creation
        */
       attached: function () {
         var plotlyReturnValue = Plotly.newPlot(
@@ -193,7 +193,7 @@ of the `data`, `layout` and `config` properties.
        * do a lot of manipulation in multiple steps and then redraw at the end,
        * call this method.
        *
-       * @return {?} whatever Plotly.redraw returns
+       * @return {Promise} a Promise for the asynchronous plot update
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       redraw: function () {
@@ -213,7 +213,7 @@ of the `data`, `layout` and `config` properties.
        * Restyle the plot with updates to all (or a specified subset of) the
        * traces.
        *
-       * @return {?} whatever Plotly.restyle returns
+       * @return {Promise} a Promise for the asynchronous plot update
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       restyle: function (style, traceIndices) {
@@ -228,7 +228,7 @@ of the `data`, `layout` and `config` properties.
       /**
        * Update the plot layout.
        *
-       * @return {?} whatever Plotly.relayout returns
+       * @return {Promise} a Promise for the asynchronous plot update
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       relayout: function (layoutUpdate) {
@@ -252,7 +252,7 @@ of the `data`, `layout` and `config` properties.
        * @param {(number|number[])=} traceIndices an individual index or an array of
        *                             indices specifying where to add the traces
        *
-       * @return {?} whatever Plotly.addTraces returns
+       * @return {Promise} a Promise for the asynchronous plot update
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       addTraces: function (traces, traceIndices) {
@@ -270,7 +270,7 @@ of the `data`, `layout` and `config` properties.
        * @param {(number|number[])=} traceIndices an individual index or an array of
        *                             indices specifying which traces to delete
        *
-       * @return {?} whatever Plotly.deleteTraces returns
+       * @return {Promise} a Promise for the asynchronous plot update
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       deleteTraces: function (traceIndices) {
@@ -292,7 +292,7 @@ of the `data`, `layout` and `config` properties.
        * @param {(number|number[])=} traceIndicesTo an individual index or an array of
        *                             indices specifying where the traces should move
 
-       * @return {?} whatever Plotly.deleteTraces returns
+       * @return {Promise} a Promise for the asynchronous plot update
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       moveTraces: function (traceIndicesFrom, traceIndicesTo) {
