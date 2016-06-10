@@ -17,6 +17,10 @@
     "plotting"
   ],
   "main": "plotly-plot.html",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ginkgobioworks/plotly-plot.git"
+  },
   "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://ginkgobioworks.github.io/plotly-plot/",
   "ignore": [
