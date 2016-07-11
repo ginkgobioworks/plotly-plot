@@ -80,13 +80,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         describe('#redraw', function () {
           it('should not throw an error', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+            _([hardcodedPlot, emptyPlot]).forEach(function (polymerPlot) {
               expect(polymerPlot.redraw.bind(hardcodedPlot)).to.not.throw();
             });
           });
 
           it('should update the data idempotently', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+            _([hardcodedPlot, emptyPlot]).forEach(function (polymerPlot) {
               var values = [4, 11, 23, 14];
               polymerPlot.set('data.0.x', values);
               expect(polymerPlot.$.plot.data[0].x).to.deep.equal(values);
@@ -96,69 +96,79 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
 
           it('should redraw on data update', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
+            _([hardcodedPlot, emptyPlot]).forEach(function (polymerPlot) {
               var values = [4, 11, 23, 14];
-              sandbox.stub(polymerPlot, 'redraw');
+              var redraw = sandbox.spy(polymerPlot, 'redraw');
               polymerPlot.set('data.0.x', values);
-              expect(polymerPlot.redraw.called).to.be.ok;
+              expect(redraw.called).to.be.ok;
             });
           });
 
           it('should redraw on nested layout update', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              sandbox.stub(polymerPlot, 'redraw');
+            _([hardcodedPlot, emptyPlot]).forEach(function (polymerPlot) {
+              var redraw = sandbox.spy(polymerPlot, 'redraw');
               polymerPlot.set('layout.title', 'New title');
-              expect(polymerPlot.redraw.called).to.be.ok;
+              expect(redraw.called).to.be.ok;
             });
           });
 
           it('should redraw on nested config update', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              sandbox.stub(polymerPlot, 'redraw');
+            _([hardcodedPlot, emptyPlot]).forEach(function (polymerPlot) {
+              var redraw = sandbox.spy(polymerPlot, 'redraw');
               polymerPlot.set('config.showLink', false);
-              expect(polymerPlot.redraw.called).to.be.ok;
+              expect(redraw.called).to.be.ok;
             });
           });
         });
 
         describe('#restyle', function () {
           it('should update all traces by default', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              polymerPlot.restyle({mode: 'lines'});
-
-              _(polymerPlot.data).forEach(function (trace) {
-                expect(trace.mode).to.equal('lines');
-              });
-
-            });
+            return Promise.all([
+              _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
+                return polymerPlot.restyle({mode: 'lines'})
+                  .then(function (resolvedPolymerPlot) {
+                    _(resolvedPolymerPlot).data.forEach(function (trace) {
+                      expect(trace.mode).to.equal('lines');
+                    });
+                  });
+              })
+            ]);
           });
 
           it('should update specific traces by index', function () {
-            hardcodedPlot.restyle({mode: 'lines'}, 0);
-            expect(hardcodedPlot.data[0].mode).to.equal('lines');
-            expect(hardcodedPlot.data[2].mode).to.not.equal('lines');
+            return hardcodedPlot.restyle({mode: 'lines'}, 0).then(function (polymerPlot) {
+              expect(polymerPlot.data[0].mode).to.equal('lines');
+              expect(polymerPlot.data[2].mode).to.not.equal('lines');
+            });
           });
 
           it('should update specific traces by index list', function () {
             var traceIndices = [0, 2];
 
-            hardcodedPlot.restyle({mode: 'lines'}, traceIndices);
-            hardcodedPlot.restyle({mode: 'markers'}, 1);
+            return Promise.all([
+              hardcodedPlot.restyle({mode: 'lines'}, traceIndices),
+              hardcodedPlot.restyle({mode: 'markers'}, 1),
+            ]).then(function (polymerPlots) {
+              // Both elements of polymerPlots are the same element: hardcodedPlot
 
-            _(traceIndices).forEach(function (traceIndex) {
-              expect(hardcodedPlot.data[traceIndex].mode).to.equal('lines');
+              _(traceIndices).forEach(function (traceIndex) {
+                expect(polymerPlots[0].data[traceIndex].mode).to.equal('lines');
+              });
+              expect(polymerPlots[0].data[1].mode).to.equal('markers');
             });
-            expect(hardcodedPlot.data[1].mode).to.equal('markers');
           });
         });
 
         describe('#relayout', function () {
           it('should update the layout property', function () {
             var newTitle = 'Some other new title';
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              polymerPlot.relayout({title: newTitle});
-              expect(polymerPlot.layout.title).to.equal(newTitle);
-            });
+            return Promise.all([
+              _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
+                return polymerPlot.relayout({title: newTitle}).then(function (resolvedPolymerPlot) {
+                  expect(resolvedPolymerPlot.layout.title).to.equal(newTitle);
+                });
+              })
+            ]);
           });
         });
 
@@ -171,89 +181,112 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           };
 
           it('should add individual traces to the end by default', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              var data = polymerPlot.data;
-              polymerPlot.addTraces(newTrace);
-              expect(data[data.length - 1]).to.deep.equal(newTrace);
-            });
+            return Promise.all([
+              _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
+                return polymerPlot.addTraces(newTrace).then(function (resolvedPolymerPlot) {
+                  var data = resolvedPolymerPlot.data;
+                  expect(data[data.length - 1]).to.deep.equal(newTrace);
+                });
+              })
+            ]);
           });
 
           it('should add individual traces by index', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              var data = polymerPlot.data;
-              var oldHeadTrace = data[0];
+            return Promise.all([
+              _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
 
-              polymerPlot.addTraces(newTrace, 0);
-              expect(data[0]).to.deep.equal(newTrace);
-              expect(data[1]).to.deep.equal(oldHeadTrace);
-            });
+                return polymerPlot.addTraces(newTrace, 0).then(function (resolvedPolymerPlot) {
+                  var data = resolvedPolymerPlot.data;
+                  var oldHeadTrace = data[0];
+                  expect(data[0]).to.deep.equal(newTrace);
+                  expect(data[1]).to.deep.equal(oldHeadTrace);
+                });
+              })
+            ]);
           });
 
           it('should add lists of traces by index', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              var addTraceIndices = [0, 1];
-              var newTraces = [newTrace, newTrace];
+            return Promise.all([
+              _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
+                var addTraceIndices = [0, 1];
+                var newTraces = [newTrace, newTrace];
 
-              polymerPlot.addTraces(newTraces, addTraceIndices);
-              _(addTraceIndices).forEach(function (traceIndex, iterationIndex) {
-                expect(plotlyPlot.data[traceIndex]).to.deep.equal(newTraces[iterationIndex]);
-              });
-            });
+                return polymerPlot.addTraces(newTraces, addTraceIndices).then(function (resolvedPolymerPlot) {
+                  _(addTraceIndices).forEach(function (traceIndex, iterationIndex) {
+                    expect(resolvedPolymerPlot.data[traceIndex]).to.deep.equal(newTraces[iterationIndex]);
+                  });
+                });
+              })
+            ]);
           });
 
-          it('should redraw', function () {
-            _([hardcodedPlot, emptyPlot]).each(function (polymerPlot) {
-              sandbox.stub(polymerPlot, 'redraw');
-              polymerPlot.addTraces(newTrace);
-              expect(polymerPlot.redraw.called).to.be.ok;
-            });
+          it('should call low-level redraw', function () {
+            return Promise.all([
+              _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
+                var redraw = sandbox.spy(Plotly, 'redraw');
+
+                return polymerPlot.addTraces(newTrace).then(function (resolvedPolymerPlot) {
+                  expect(redraw.withArgs(resolvedPolymerPlot.$.plot).calledOnce).to.be.ok;
+                });
+              })
+            ]);
           });
         });
 
         describe('#deleteTraces', function () {
           it('should lower the length of the data property', function () {
             var oldLength = hardcodedPlot.data.length;
-            hardcodedPlot.deleteTraces(0);
-            expect(hardcodedPlot.data.length).to.equal(oldLength - 1);
+
+            return hardcodedPlot.deleteTraces(0).then(function (polymerPlot) {
+              expect(polymerPlot.data.length).to.equal(oldLength - 1);
+            });
           });
 
           it('should delete the trace from the data property', function () {
             var deletedTrace = hardcodedPlot.data[0];
-            hardcodedPlot.deleteTraces(0);
-            _(hardcodedPlot.data).forEach(function (trace) {
-              expect(trace).to.not.deep.equal(deletedTrace);
+
+            return hardcodedPlot.deleteTraces(0).then(function (polymerPlot) {
+              _(polymerPlot.data).forEach(function (trace) {
+                expect(trace).to.not.deep.equal(deletedTrace);
+              });
             });
           });
 
-          it('should not call redraw', function () {
-            sandbox.stub(hardcodedPlot, 'redraw');
-            hardcodedPlot.deleteTraces(0);
-            expect(hardcodedPlot.redraw.called).to.not.be.ok;
+          it('should call low-level delete', function () {
+            var deleteTraces = sandbox.spy(Plotly, 'deleteTraces');
+
+            return hardcodedPlot.deleteTraces(0).then(function (polymerPlot) {
+              expect(deleteTraces.withArgs(polymerPlot.$.plot, 0).calledOnce).to.be.ok;
+            });
           });
         });
 
         describe('#moveTraces', function () {
           it('should not change the length of the data property', function () {
             var oldLength = hardcodedPlot.data.length;
-            hardcodedPlot.moveTraces(0);
-            expect(hardcodedPlot.data.length).to.equal(oldLength);
+
+            return hardcodedPlot.moveTraces(0).then(function (polymerPlot) {
+              expect(polymerPlot.data.length).to.equal(oldLength);
+            });
           });
 
           it('should update the data property', function () {
             var movedTraces = hardcodedPlot.data.slice(1);
             movedTraces.push(hardcodedPlot.data[0]);
 
-            hardcodedPlot.moveTraces(0);
-
-            _(hardcodedPlot.data).forEach(function (trace, traceIndex) {
-              expect(trace).to.deep.equal(movedTraces[traceIndex]);
+            return hardcodedPlot.moveTraces(0).then(function (polymerPlot) {
+              _(polymerPlot.data).forEach(function (trace, traceIndex) {
+                expect(trace).to.deep.equal(movedTraces[traceIndex]);
+              });
             });
           });
 
-          it('should call redraw', function () {
-            sandbox.stub(hardcodedPlot, 'redraw');
-            hardcodedPlot.moveTraces(0);
-            expect(hardcodedPlot.redraw.called).to.be.ok;
+          it('should call low-level move', function () {
+            var moveTraces = sandbox.spy(Plotly, 'moveTraces');
+
+            return hardcodedPlot.moveTraces(0).then(function (polymerPlot) {
+              expect(moveTraces.withArgs(polymerPlot.$.plot, 0).calledOnce).to.be.ok;
+            });
           });
         });
 
