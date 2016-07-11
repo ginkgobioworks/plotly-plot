@@ -26,7 +26,7 @@ Import the element into your project by using an HTML import, as with any other
 Polymer element:
 
 ```html
-<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../plotly-plot/plotly-plot.html">
 ```
 
 ## Developing/contributing to `plotly-plot`
