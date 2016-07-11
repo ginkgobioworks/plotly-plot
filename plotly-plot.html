@@ -71,7 +71,7 @@ of the `data`, `layout` and `config` properties.
           reflectToAttribute: true,
           notify: true,
           observer: 'relayout',
-          value: function () { return { height: 0, width: 0, title: '' }; }
+          value: function () { return {}; }
         },
 
         /**
@@ -319,6 +319,24 @@ of the `data`, `layout` and `config` properties.
 
             return self;
           });
+      },
+
+      /**
+       * Clear all plots and snapshots.
+       *
+       * @return {Polymer} the current element
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
+      purge: function () {
+        Plotly.purge(this.$.plot);
+
+        this.$.plot.data = [];
+        this.data = [];
+
+        this.$.plot.layout = {};
+        this.layout = {};
+
+        return this;
       },
 
     });

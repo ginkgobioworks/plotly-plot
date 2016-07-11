@@ -290,6 +290,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         });
 
+        describe('#purge', function () {
+          it('should clear the data property', function () {
+            // Purge does not return a promise: it's synchronous
+            hardcodedPlot.purge();
+            expect(hardcodedPlot.data).to.be.empty;
+          });
+        });
       });
     </script>
 
