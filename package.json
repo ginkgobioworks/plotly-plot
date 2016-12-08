@@ -22,8 +22,8 @@
   "license": "SEE LICENSE IN http://polymer.github.io/LICENSE.txt",
   "homepage": "https://ginkgobioworks.github.io/plotly-plot/",
   "dependencies": {
-    "Polymer": "^1.2.0",
-    "plotly.js": "^1.10.2"
+    "plotly.js": "^1.10.2",
+    "Polymer": "^1.6.0"
   },
   "files": [
     "index.html",
@@ -42,7 +42,7 @@
     "web-component-tester": "^4.0.0"
   },
   "peerDependencies": {
-    "Polymer": "^1.2.0"
+    "Polymer": "^1.6.0"
   },
   "scripts": {
     "start": "polyserve",
