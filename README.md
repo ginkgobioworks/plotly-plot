@@ -2,6 +2,8 @@
 
 Polymer element for the [plotly.js](https://plot.ly/javascript/) library.
 
+[![Build Status](https://travis-ci.org/ginkgobioworks/plotly-plot.svg?branch=master)](https://travis-ci.org/ginkgobioworks/plotly-plot)
+
 `<plotly-plot>` provides a thin, fully-functional interface to the core of the
 library. The key properties of the plot, `data`, `layout`, and `config`, are
 all exposed as Polymer properties; updates to these properties via `.set` will
