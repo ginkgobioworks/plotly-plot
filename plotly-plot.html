@@ -48,14 +48,16 @@ of the `data`, `layout` and `config` properties.
          * array of nested object that significantly depends on the plot type,
          * etc.
          *
+         * @type {Array<Object>}
+         * @default [{x: [], y: []}]
+         *
          * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
-         * @type { Object[] }
          */
         data: {
           type: Array,
           reflectToAttribute: true,
           notify: true,
-          observer: 'redraw',
+          observer: '_autoRedraw',
           value: function () { return [{x: [], y: []}]; }
         },
 
@@ -63,14 +65,16 @@ of the `data`, `layout` and `config` properties.
          * Settings for the layout of the plot as  a whole:
          * width, height, title, etc.
          *
+         * @type {Object}
+         * @default {}
+         *
          * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
-         * @type { Object }
          */
         layout: {
           type: Object,
           reflectToAttribute: true,
           notify: true,
-          observer: 'relayout',
+          observer: '_autoRelayout',
           value: function () { return {}; }
         },
 
@@ -79,14 +83,16 @@ of the `data`, `layout` and `config` properties.
          * not to show the toolbar, plot.ly icon, whether or not to make the
          * plot static, etc.
          *
+         * @type {Object}
+         * @default {}
+         *
          * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
-         * @type { Object }
          */
         config: {
           type: Object,
           reflectToAttribute: true,
           notify: true,
-          observer: 'redraw',
+          observer: '_autoRedraw',
           value: function () { return {}; }
         },
 
@@ -132,8 +138,9 @@ of the `data`, `layout` and `config` properties.
        * When the element is attached, create the plot, and bind the Polymer
        * wrapper events to the plotly custom events.
        *
-       * @return {Promise} a Promise for the asynchronous plot creation that resolves
-       *                   to the Polymer element.
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot creation that resolves to the
+       *  Polymer element.
        */
       attached: function () {
         var self = this;
@@ -145,6 +152,7 @@ of the `data`, `layout` and `config` properties.
          * Custom plotly-specific click event for tracking clicks on the chart.
          *
          * @event plotly-click
+         * @see the {@link https://plot.ly/javascript/plotlyjs-events/|events reference}
          */
         self._onPlotlyClick = function (data) {
           return self.fire('plotly-click', {data: data});
@@ -224,8 +232,10 @@ of the `data`, `layout` and `config` properties.
        * do a lot of manipulation in multiple steps and then redraw at the end,
        * call this method.
        *
-       * @return {Promise} a Promise for the asynchronous plot update that resolves
-       *                   to the Polymer element.
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       redraw: function () {
@@ -263,8 +273,10 @@ of the `data`, `layout` and `config` properties.
        * Restyle the plot with updates to all (or a specified subset of) the
        * traces.
        *
-       * @return {Promise} a Promise for the asynchronous plot update that resolves
-       *                   to the Polymer element.
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       restyle: function (style, traceIndices) {
@@ -280,8 +292,10 @@ of the `data`, `layout` and `config` properties.
       /**
        * Update the plot layout.
        *
-       * @return {Promise} a Promise for the asynchronous plot update that resolves
-       *                   to the Polymer element.
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       relayout: function (layoutUpdate) {
@@ -318,14 +332,17 @@ of the `data`, `layout` and `config` properties.
       /**
        * Add traces to the plot in the specified indices, if provided.
        *
-       * @param {(Object|Object[])} traces an individual trace, as an object of
-       *                            trace information, or an array of those traces
+       * @param {(Object|Array<Object>)} traces
+       *  an individual trace, as an object of trace information, or an array
+       *  of those traces
+       * @param {(number|Array<number>)=} traceIndices
+       *  an individual index or an array of indices specifying where to add
+       *  the traces
        *
-       * @param {(number|number[])=} traceIndices an individual index or an array of
-       *                             indices specifying where to add the traces
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
        *
-       * @return {Promise} a Promise for the asynchronous plot update that resolves
-       *                   to the Polymer element.
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       addTraces: function (traces, traceIndices) {
@@ -341,11 +358,14 @@ of the `data`, `layout` and `config` properties.
       /**
        * Delete the specified traces from the plot.
        *
-       * @param {(number|number[])=} traceIndices an individual index or an array of
-       *                             indices specifying which traces to delete
+       * @param {(number|Array<number>)=} traceIndices
+       *  an individual index or an array of indices specifying which traces to
+       *  delete
        *
-       * @return {Promise} a Promise for the asynchronous plot update that resolves
-       *                   to the Polymer element.
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       deleteTraces: function (traceIndices) {
@@ -363,18 +383,22 @@ of the `data`, `layout` and `config` properties.
        * Move a specified set traces from the plot to a newly specified set of
        * destination trace positions.
        *
-       * @param {(number|number[])=} traceIndicesFrom an individual index or an array of
-       *                             indices specifying which traces to move
+       * @param {(number|Array<number>)=} traceIndicesFrom
+       *  an individual index or an array of indices specifying which traces to
+       *  move
+       * @param {(number|Array<number>)=} traceIndicesTo
+       *  an individual index or an array of indices specifying where the
+       *  traces should move
        *
-       * @param {(number|number[])=} traceIndicesTo an individual index or an array of
-       *                             indices specifying where the traces should move
-
-       * @return {Promise} a Promise for the asynchronous plot update that resolves
-       *                   to the Polymer element.
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       moveTraces: function (traceIndicesFrom, traceIndicesTo) {
         var self = this;
+
         return Plotly.moveTraces(self.$.plot, traceIndicesFrom, traceIndicesTo)
           .then(function (plotDiv) {
             // Update the polymer properties to reflect the updated data
@@ -387,7 +411,8 @@ of the `data`, `layout` and `config` properties.
       /**
        * Clear all plots and snapshots.
        *
-       * @return {Polymer} the current element
+       * @return {Polymer.Base} the current element
+       *
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       purge: function () {
