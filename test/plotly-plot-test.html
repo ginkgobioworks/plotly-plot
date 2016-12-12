@@ -119,6 +119,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               expect(redraw.called).to.be.ok;
             });
           });
+
+          it('should not redraw in manual mode', function () {
+            _([hardcodedPlot, emptyPlot]).forEach(function (polymerPlot) {
+              var redraw;
+              var values = [4, 11, 23, 14];
+              polymerPlot.manual = true;
+              redraw = sandbox.spy(polymerPlot, 'redraw');
+
+              polymerPlot.set('data.0.x', values);
+              expect(redraw.called).to.not.be.ok;
+
+              polymerPlot.set('layout.title', 'New title');
+              expect(redraw.called).to.not.be.ok;
+
+              polymerPlot.set('config.showLink', false);
+              expect(redraw.called).to.be.ok;
+            });
+          });
         });
 
         describe('#restyle', function () {

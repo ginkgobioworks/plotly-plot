@@ -89,13 +89,40 @@ of the `data`, `layout` and `config` properties.
           observer: 'redraw',
           value: function () { return {}; }
         },
+
+        /**
+         * If true, manually update the plot instead of having it automatically
+         * redraw itself on property changes.
+         *
+         * @type {boolean}
+         * @default false
+         */
+        manual: {
+          type: Boolean,
+          reflectToAttribute: true,
+          notify: true,
+          observer: '_autoRedraw',
+          value: false,
+        },
+
+        /**
+         * How often to allow automatic redraw events to fire. At most one such
+         * event will happen every this number of milliseconds.
+         *
+         * @type { number }
+         * @default 300
+         */
+        debounceInterval: {
+          type: Number,
+          value: 300,
+        },
       },
 
       observers: [
         // Redraw the plot after any of the nested data in the properties change
-        'redraw(data.*)',
-        'redraw(layout.*)',
-        'redraw(config.*)'
+        '_autoRedraw(data.*)',
+        '_autoRedraw(layout.*)',
+        '_autoRedraw(config.*)'
       ],
 
 
@@ -217,6 +244,22 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
+       * Automatically redraw the plot on data updates, if not manual.
+       * Debounces the .redraw call.
+       */
+      _autoRedraw: function () {
+        if (! this.manual) {
+          this.debounce(
+            'autoRedraw',
+            this.redraw.bind(this),
+            this.debounceInterval
+          );
+        }
+
+        return;
+      },
+
+      /**
        * Restyle the plot with updates to all (or a specified subset of) the
        * traces.
        *
@@ -249,6 +292,24 @@ of the `data`, `layout` and `config` properties.
             self.layout = plotDiv.layout;
             return self;
           });
+      },
+
+      /**
+       * Automatically redraw the plot on layout updates, if not manual.
+       * Debounces the .relayout call.
+       */
+      _autoRelayout: function (layoutUpdate) {
+        var self = this;
+
+        if (! self.manual) {
+          self.debounce(
+            'autoRelayout',
+            function () { self.relayout(layoutUpdate); },
+            self.debounceInterval
+          );
+        }
+
+        return;
       },
 
 
