@@ -107,7 +107,6 @@ of the `data`, `layout` and `config` properties.
           type: Boolean,
           reflectToAttribute: true,
           notify: true,
-          observer: '_autoRedraw',
           value: false,
         },
 
@@ -250,7 +249,13 @@ of the `data`, `layout` and `config` properties.
         self.$.plot.layout = self.layout;
         self.$.plot.config = self.config;
 
-        return Plotly.redraw(self.$.plot).then(function () { return self; });
+        return Plotly.redraw(self.$.plot).then(function () {
+          // Remove any tasks waiting to go; prevent any further debounced
+          // redraws
+          self.cancelDebouncer('autoRedraw');
+
+          return self;
+        });
       },
 
       /**
@@ -302,8 +307,17 @@ of the `data`, `layout` and `config` properties.
         var self = this;
         return Plotly.relayout(self.$.plot, layoutUpdate)
           .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
+            var oldManual;
+
+            // Remove any tasks waiting to go; prevent any further relayouts
+            self.cancelDebouncer('autoRelayout');
+
+            // Safely Update the polymer properties to reflect the updated data
+            oldManual = self.manual;
+            self.manual = true;
             self.layout = plotDiv.layout;
+            self.manual = oldManual;
+
             return self;
           });
       },
