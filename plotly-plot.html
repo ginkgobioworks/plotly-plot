@@ -170,17 +170,19 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
-       * When the element is attached, create the plot, and bind the Polymer
-       * wrapper events to the plotly custom events.
-       *
-       * @return {Void}
+       * When the element is detached, remove the attached Polymer events
        */
       detached: function () {
-        // Remove the attached Polymer events
-        this.$.plot.removeListener('plotly_click', this._onPlotlyClick);
-        this.$.plot.removeListener('plotly_beforehover', this._onPlotlyBeforehover);
-        this.$.plot.removeListener('plotly_hover', this._onPlotlyHover);
-        this.$.plot.removeListener('plotly_unhover', this._onPlotlyUnhover);
+        // Protect this in an if statement because if .purge is called before
+        // the element is detached, the events and event functions are also
+        // removed.
+
+        if (typeof this.$.plot.removeListener === 'function') {
+          this.$.plot.removeListener('plotly_click', this._onPlotlyClick);
+          this.$.plot.removeListener('plotly_beforehover', this._onPlotlyBeforehover);
+          this.$.plot.removeListener('plotly_hover', this._onPlotlyHover);
+          this.$.plot.removeListener('plotly_unhover', this._onPlotlyUnhover);
+        }
 
         return;
       },
