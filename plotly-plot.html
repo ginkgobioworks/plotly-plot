@@ -111,15 +111,15 @@ of the `data`, `layout` and `config` properties.
         },
 
         /**
-         * How often to allow automatic redraw events to fire. At most one such
+         * How often to allow automatic update events to fire. At most one such
          * event will happen every this number of milliseconds.
          *
          * @type { number }
-         * @default 300
+         * @default 30
          */
         debounceInterval: {
           type: Number,
-          value: 300,
+          value: 30,
         },
       },
 
@@ -207,10 +207,10 @@ of the `data`, `layout` and `config` properties.
        * When the element is detached, remove the attached Polymer events
        */
       detached: function () {
-        // Protect this in an if statement because if .purge is called before
-        // the element is detached, the events and event functions are also
-        // removed.
 
+        // Protect detaching listeners in an if statement, because
+        // `removeListener` is plotly.js functionality, which is removed
+        // if .purge is called before the element is detached.
         if (typeof this.$.plot.removeListener === 'function') {
           this.$.plot.removeListener('plotly_click', this._onPlotlyClick);
           this.$.plot.removeListener('plotly_beforehover', this._onPlotlyBeforehover);
@@ -263,7 +263,9 @@ of the `data`, `layout` and `config` properties.
        * Debounces the .redraw call.
        */
       _autoRedraw: function () {
-        if (! this.manual) {
+        if (typeof self.manual !== 'undefined' && !self.manual) {
+          // Limit the frequency of redraw tasks by putting them in a
+          // debounce queue
           this.debounce(
             'autoRedraw',
             this.redraw.bind(this),
@@ -277,6 +279,15 @@ of the `data`, `layout` and `config` properties.
       /**
        * Restyle the plot with updates to all (or a specified subset of) the
        * traces.
+       *
+       * @param {Object<string,*|Array>}
+       *  an object whose keys are normal trace keys, and whose values are
+       *  either regular keys, or array versions of the normal trace object
+       *  values: one value in the array will be applied to each of the traces
+       *  in the `traceIndices` argument.
+       * @param {number|Array<number>}
+       *  a single index, or an array of indices of traces (the elements of
+       *  `.data`) on which to apply the styles
        *
        * @return {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
@@ -297,6 +308,9 @@ of the `data`, `layout` and `config` properties.
       /**
        * Update the plot layout.
        *
+       * @param {Object} layoutUpdate
+       *  the data to change in the `layout` property
+       *
        * @return {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
@@ -309,10 +323,12 @@ of the `data`, `layout` and `config` properties.
           .then(function (plotDiv) {
             var oldManual;
 
-            // Remove any tasks waiting to go; prevent any further relayouts
+            // Remove any debounced relayout tasks waiting to go;
+            // prevent any further relayouts
             self.cancelDebouncer('autoRelayout');
 
-            // Safely Update the polymer properties to reflect the updated data
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
             oldManual = self.manual;
             self.manual = true;
             self.layout = plotDiv.layout;
@@ -324,12 +340,17 @@ of the `data`, `layout` and `config` properties.
 
       /**
        * Automatically redraw the plot on layout updates, if not manual.
-       * Debounces the .relayout call.
+       * Debounces the `.relayout` call.
+       *
+       * @param {Object} layoutUpdate
+       *  the data to change in the `layout` property
        */
       _autoRelayout: function (layoutUpdate) {
         var self = this;
 
-        if (! self.manual) {
+        if (typeof self.manual !== 'undefined' && !self.manual) {
+          // Limit the frequency of relayout tasks by putting them in a
+          // debounce queue
           self.debounce(
             'autoRelayout',
             function () { self.relayout(layoutUpdate); },
