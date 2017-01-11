@@ -24,7 +24,8 @@
   "homepage": "https://ginkgobioworks.github.io/plotly-plot/",
   "ignore": [
     "/.*",
-    "/test/"
+    "/test/",
+    "/yarn.lock"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.2.0",
