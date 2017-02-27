@@ -114,7 +114,7 @@ of the `data`, `layout` and `config` properties.
          * How often to allow automatic update events to fire. At most one such
          * event will happen every this number of milliseconds.
          *
-         * @type { number }
+         * @type {number}
          * @default 30
          */
         debounceInterval: {
@@ -306,6 +306,35 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
+       * Update the properties of the object object without triggering any
+       * automatic actions they might be bound to.
+       *
+       * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>} updateAction
+       *  the action to take; if asynchronous, should return a Promise. Otherwise,
+       *  a typical value is fine.
+       *
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
+      _safeUpdateProps: function (updateAction) {
+        var self = this;
+        var oldManual;
+
+        return new Promise(function (resolve, reject) {
+          oldManual = self.manual;
+          self.manual = true;
+          resolve();
+        }).then(function () {
+          return updateAction(self, self.manual, oldManual);
+        }).then(function () {
+          self.manual = oldManual;
+        });
+      }
+
+      /**
        * Update the plot layout.
        *
        * @param {Object} layoutUpdate
@@ -321,18 +350,15 @@ of the `data`, `layout` and `config` properties.
         var self = this;
         return Plotly.relayout(self.$.plot, layoutUpdate)
           .then(function (plotDiv) {
-            var oldManual;
-
             // Remove any debounced relayout tasks waiting to go;
             // prevent any further relayouts
             self.cancelDebouncer('autoRelayout');
 
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
-            oldManual = self.manual;
-            self.manual = true;
-            self.layout = plotDiv.layout;
-            self.manual = oldManual;
+            self._safeUpdateProps(function () {
+              self.layout = plotDiv.layout;
+            });
 
             return self;
           });
