@@ -16,7 +16,6 @@ addons:
       - google-chrome
     packages:
       - google-chrome-stable
-  sauce_connect: false
 script:
   - xvfb-run wct
 dist: trusty
