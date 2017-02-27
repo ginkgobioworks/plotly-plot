@@ -145,7 +145,7 @@ of the `data`, `layout` and `config` properties.
       // Manage life cycle events
 
       /**
-       * When the element is attached, create the plot, and bind the Polymer
+       * When the element is attached, create the plot and bind the Polymer
        * wrapper events to the plotly custom events.
        *
        * @return {Promise<Polymer.Base>}
@@ -215,7 +215,7 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
-       * When the element is detached, remove the attached Polymer events
+       * When the element is detached, remove the attached Polymer events.
        */
       detached: function () {
 
@@ -309,7 +309,7 @@ of the `data`, `layout` and `config` properties.
        * automatic actions they might be bound to, by turning on the 'manual'
        * flag temporarily
        *
-       * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>} updateAction
+       * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>=} updateAction
        *  the action to take; if asynchronous, should return a Promise. Otherwise,
        *  a typical value is fine.
        *
@@ -335,14 +335,15 @@ of the `data`, `layout` and `config` properties.
 
       /**
        * Restyle the plot with updates to all (or a specified subset of) the
-       * traces.
+       * traces. Will update the plot's `data` property with the effective
+       * resulting changes.
        *
-       * @param {Object<string,*|Array>}
+       * @param {Object<string,*|Array>} style
        *  an object whose keys are normal trace keys, and whose values are
        *  either regular keys, or array versions of the normal trace object
        *  values: one value in the array will be applied to each of the traces
        *  in the `traceIndices` argument.
-       * @param {number|Array<number>}
+       * @param {number|Array<number>} traceIndices
        *  a single index, or an array of indices of traces (the elements of
        *  `.data`) on which to apply the styles
        *
@@ -357,8 +358,13 @@ of the `data`, `layout` and `config` properties.
 
         return Plotly.restyle(self.$.plot, style, traceIndices)
           .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
+
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
+            self._safeUpdateProps(function () {
+              self.data = plotDiv.data;
+            });
+
             return self;
           });
       },
@@ -396,8 +402,8 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
-       * Automatically redraw the plot on layout updates, if not manual.
-       * Debounces the `.relayout` call.
+       * Automatically redraw the plot on layout updates, unless `manual` is
+       * set. Debounces the `.relayout` call.
        *
        * @param {Object} layoutUpdate
        *  the data to change in the `layout` property
