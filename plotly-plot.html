@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="plotly-import.html">
 
 <!--
@@ -98,7 +99,7 @@ of the `data`, `layout` and `config` properties.
 
         /**
          * If true, manually update the plot instead of having it automatically
-         * redraw itself on property changes.
+         * redraw itself on property changes (the default).
          *
          * @type {boolean}
          * @default false
@@ -130,8 +131,18 @@ of the `data`, `layout` and `config` properties.
         '_autoRedraw(config.*)'
       ],
 
+      behaviors: [
+        // Resize the plot dynamically
+        Polymer.IronResizableBehavior,
+      ],
 
-      // Life Cycle
+      listeners: {
+        // Listen for the `iron-resize` event to implement fluid resizing.
+        'iron-resize': '_onIronResize',
+      },
+
+
+      // Manage life cycle events
 
       /**
        * When the element is attached, create the plot, and bind the Polymer
@@ -222,6 +233,23 @@ of the `data`, `layout` and `config` properties.
       },
 
 
+      // Manage other events
+
+      /**
+       * Resize the plot when the containing element is resized.
+       *
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the resize action that resolves to the
+       *  Polymer element.
+       *
+       * @see the {@link https://plot.ly/javascript/responsive-fluid-layout/|plotly.js fluid layout reference}
+       */
+      _onIronResize: function () {
+        return this.resize();
+      },
+
+
+
       // Update the plot to reflect new data
 
       /**
@@ -277,6 +305,35 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
+       * Update the properties of the object object without triggering any
+       * automatic actions they might be bound to, by turning on the 'manual'
+       * flag temporarily
+       *
+       * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>} updateAction
+       *  the action to take; if asynchronous, should return a Promise. Otherwise,
+       *  a typical value is fine.
+       *
+       * @return {Promise<void>}
+       *  a Promise that resolves when the manual has been returned to its
+       *  original value
+       */
+      _safeUpdateProps: function (updateAction) {
+        var self = this;
+        var oldManual;
+
+        return new Promise(function (resolve, reject) {
+          oldManual = self.manual;
+          self.manual = true;
+          resolve();
+        }).then(function () {
+          return updateAction(self, self.manual, oldManual);
+        }).then(function () {
+          self.manual = oldManual;
+        });
+      },
+
+
+      /**
        * Restyle the plot with updates to all (or a specified subset of) the
        * traces.
        *
@@ -297,6 +354,7 @@ of the `data`, `layout` and `config` properties.
        */
       restyle: function (style, traceIndices) {
         var self = this;
+
         return Plotly.restyle(self.$.plot, style, traceIndices)
           .then(function (plotDiv) {
             // Update the polymer properties to reflect the updated data
@@ -306,36 +364,8 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
-       * Update the properties of the object object without triggering any
-       * automatic actions they might be bound to.
-       *
-       * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>} updateAction
-       *  the action to take; if asynchronous, should return a Promise. Otherwise,
-       *  a typical value is fine.
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot update that resolves to the
-       *  Polymer element.
-       *
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      _safeUpdateProps: function (updateAction) {
-        var self = this;
-        var oldManual;
-
-        return new Promise(function (resolve, reject) {
-          oldManual = self.manual;
-          self.manual = true;
-          resolve();
-        }).then(function () {
-          return updateAction(self, self.manual, oldManual);
-        }).then(function () {
-          self.manual = oldManual;
-        });
-      }
-
-      /**
-       * Update the plot layout.
+       * Update the plot layout. Will update the plot's `layout` property
+       * with the effective resulting changes.
        *
        * @param {Object} layoutUpdate
        *  the data to change in the `layout` property
@@ -348,6 +378,7 @@ of the `data`, `layout` and `config` properties.
        */
       relayout: function (layoutUpdate) {
         var self = this;
+
         return Plotly.relayout(self.$.plot, layoutUpdate)
           .then(function (plotDiv) {
             // Remove any debounced relayout tasks waiting to go;
@@ -387,6 +418,22 @@ of the `data`, `layout` and `config` properties.
         return;
       },
 
+      /**
+       * Resize the plot to fit in its container.
+       *
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the resize action that resolves to the
+       *  Polymer element.
+       *
+       * @see the {@link https://plot.ly/javascript/responsive-fluid-layout/|plotly.js fluid layout reference}
+       */
+      resize: function () {
+        var self = this;
+
+        return Plotly.Plots.resize(self.$.plot).then(function () {
+          return self;
+        });
+      },
 
       // Manipulate traces
 
@@ -408,6 +455,7 @@ of the `data`, `layout` and `config` properties.
        */
       addTraces: function (traces, traceIndices) {
         var self = this;
+
         return Plotly.addTraces(self.$.plot, traces, traceIndices)
           .then(function (plotDiv) {
             // Update the polymer properties to reflect the updated data
@@ -431,6 +479,7 @@ of the `data`, `layout` and `config` properties.
        */
       deleteTraces: function (traceIndices) {
         var self = this;
+
         return Plotly.deleteTraces(self.$.plot, traceIndices)
           .then(function (plotDiv) {
             // Update the polymer properties to reflect the updated data
@@ -441,8 +490,8 @@ of the `data`, `layout` and `config` properties.
       },
 
       /**
-       * Move a specified set traces from the plot to a newly specified set of
-       * destination trace positions.
+       * Move a specified set of traces from the plot to a newly specified set
+       * of destination trace positions.
        *
        * @param {(number|Array<number>)=} traceIndicesFrom
        *  an individual index or an array of indices specifying which traces to
@@ -477,15 +526,20 @@ of the `data`, `layout` and `config` properties.
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       purge: function () {
-        Plotly.purge(this.$.plot);
+        var self = this;
 
-        this.$.plot.data = [];
-        this.data = [];
+        Plotly.purge(self.$.plot);
 
-        this.$.plot.layout = {};
-        this.layout = {};
+        // Safely clear all the properties
+        self._safeUpdateProps(function () {
+          self.$.plot.data = [];
+          self.data = [];
 
-        return this;
+          self.$.plot.layout = {};
+          self.layout = {};
+        });
+
+        return self;
       },
 
     });

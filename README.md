@@ -45,6 +45,9 @@ Installing dependencies:
 
     bower install
 
+Installing development dependencies
+
+    npm install
 
 ### Linting
 
@@ -104,6 +107,12 @@ Running all tests on chrome:
 `wct -p` will keep the browsers alive after test runs (refresh to re-run).
 
 `wct test/some-file.html` will test only the files you specify.
+
+
+### Travis
+
+On every merge request in this repo, linting and tests will automatically be
+performed by travis-ci.
 
 ### NPM
 
