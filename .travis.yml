@@ -1,21 +1,29 @@
 language: node_js
 sudo: required
 before_script:
-  - npm install -g bower polylint web-component-tester
-  - bower install
-  - polylint
+- npm install -g bower polylint web-component-tester
+- bower install
+- polylint
 env:
   global:
-    - secure: gZ5vpMlc9fuKSZeMmT6xf4+FIVWxET6f6Lkp6l5Qo9vL2X/KC/bMJF1v2w5xXFLFTdm/hPUDkeQRDUBBJhGcsXhJeWIvAXdPkObV9ZPRwpDnnN1qU5lOqVIy6gFjDm2Wm6UNXcRnyP1TrGpMwbG13EUtD0rF8LZqBm3B833sKS4=
-    - secure: DObDewETPYiIsASeC3UETPbQ6YBniRZdNV2eTM1xULvuFNDxXJD09KKyWOiMduublEIJRXLjBIXmD8cbVsgrbRUYA4bxcXffDeuc6q6HaQGU9HvIbLz6o3/oxi4fX2G9GwrZtijW2p2Rgw2l9koR3ovjcM97CSTWFUMh5rtXag8=
+  - secure: gZ5vpMlc9fuKSZeMmT6xf4+FIVWxET6f6Lkp6l5Qo9vL2X/KC/bMJF1v2w5xXFLFTdm/hPUDkeQRDUBBJhGcsXhJeWIvAXdPkObV9ZPRwpDnnN1qU5lOqVIy6gFjDm2Wm6UNXcRnyP1TrGpMwbG13EUtD0rF8LZqBm3B833sKS4=
+  - secure: DObDewETPYiIsASeC3UETPbQ6YBniRZdNV2eTM1xULvuFNDxXJD09KKyWOiMduublEIJRXLjBIXmD8cbVsgrbRUYA4bxcXffDeuc6q6HaQGU9HvIbLz6o3/oxi4fX2G9GwrZtijW2p2Rgw2l9koR3ovjcM97CSTWFUMh5rtXag8=
 node_js: stable
 addons:
   firefox: latest
   apt:
     sources:
-      - google-chrome
+    - google-chrome
     packages:
-      - google-chrome-stable
+    - google-chrome-stable
 script:
-  - xvfb-run wct
+- xvfb-run wct
 dist: trusty
+deploy:
+  provider: npm
+  email: misha@ginkgobioworks.com
+  api_key:
+    secure: RaHu9nAQUkPyp6LZ2mEvD5zbdXeHIZrP20iTT4N5kl3kB8BmXQBVphJ4rkcmdRYT13JZIlXzIvqWE8QdK+PmapOIWaGJ4t5XQ0Hjrqm5iUutDzvkypKBl6R44SlhIAp4KwWbEHeDkVZnhHZFirhgJMADbROBvBxTYAORab2zMmWWP1QbtLNjZ0RA1GPfM4KA+XVQsNwKTvlVZDQN8pptVsxfLI+MpDkGiZbq2zs0m5MUzMRVit2yN+HbSKCZRNU46cVFkA0SaDKTShHbydFvFLCgIQrOei+GzLu0PQXyjFLyz+lgkEdRgEp6bjC+ZrpU3vDKMnzo0pucpa8LTfUFxua/OLV6MVBcjB6/BeifMyd9R9yDfZcxlePSwyiiwWdR79bWnQckrN+jf5RaUk03GVmn6oo2zXK8kFZKIQw9rYfBKyisN5I9apqEyOmGQU7Uk6oqcUU8rYAsSp+8FQ9pcPXd2PXj9HkjzakGPWutHlb+5EKRy2pjX/G2EuJUhVzs4f3TPuAEfNnG/mz5TaMU7T1XpaZ0NQ5yTgr0NRNt2lgLV5Zej6sqkE3evMEGwtC1GSkbWO3kaigBVDi3Ys09fOUzRBZebaO63exzwqVKA15D4gAsaNoReh9eelhOix4PYvlnb4huxgy1Jf5SuNSjHblAm8I2UoTAl4MRle940fQ=
+  on:
+    tags: true
+    repo: ginkgobioworks/plotly-plot
