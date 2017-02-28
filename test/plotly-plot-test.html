@@ -309,10 +309,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         describe('#purge', function () {
-          it('should clear the data property', function () {
+          it('should clear the data property', function (done) {
             // Purge does not return a promise: it's synchronous
-            hardcodedPlot.purge();
-            expect(hardcodedPlot.data).to.be.empty;
+            hardcodedPlot.purge().then(function (polymerPlot) {
+              expect(polymerPlot.data).to.be.empty;
+            });
           });
         });
       });

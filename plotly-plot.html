@@ -311,11 +311,12 @@ of the `data`, `layout` and `config` properties.
        *
        * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>=} updateAction
        *  the action to take; if asynchronous, should return a Promise. Otherwise,
-       *  a typical value is fine.
+       *  a typical value, or void, is fine. The function is passed the element,
+       *  followed by the current and former states of the manual flag.
        *
-       * @return {Promise<void>}
-       *  a Promise that resolves when the manual has been returned to its
-       *  original value
+       * @return {Promise<Polymer.Base>}
+       *  a Promise that resolves to the element when the manual flag has been
+       *  returned to its original value
        */
       _safeUpdateProps: function (updateAction) {
         var self = this;
@@ -329,6 +330,7 @@ of the `data`, `layout` and `config` properties.
           return updateAction(self, self.manual, oldManual);
         }).then(function () {
           self.manual = oldManual;
+          return self;
         });
       },
 
@@ -358,14 +360,11 @@ of the `data`, `layout` and `config` properties.
 
         return Plotly.restyle(self.$.plot, style, traceIndices)
           .then(function (plotDiv) {
-
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
-            self._safeUpdateProps(function () {
+            return self._safeUpdateProps(function () {
               self.data = plotDiv.data;
             });
-
-            return self;
           });
       },
 
@@ -393,11 +392,9 @@ of the `data`, `layout` and `config` properties.
 
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
-            self._safeUpdateProps(function () {
+            return self._safeUpdateProps(function () {
               self.layout = plotDiv.layout;
             });
-
-            return self;
           });
       },
 
@@ -464,9 +461,11 @@ of the `data`, `layout` and `config` properties.
 
         return Plotly.addTraces(self.$.plot, traces, traceIndices)
           .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
-            return self;
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
+            return self._safeUpdateProps(function () {
+              self.data = plotDiv.data;
+            });
           });
       },
 
@@ -488,10 +487,11 @@ of the `data`, `layout` and `config` properties.
 
         return Plotly.deleteTraces(self.$.plot, traceIndices)
           .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
-
-            return self;
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
+            return self._safeUpdateProps(function () {
+              self.data = plotDiv.data;
+            });
           });
       },
 
@@ -517,10 +517,11 @@ of the `data`, `layout` and `config` properties.
 
         return Plotly.moveTraces(self.$.plot, traceIndicesFrom, traceIndicesTo)
           .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
-
-            return self;
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
+            return self._safeUpdateProps(function () {
+              self.data = plotDiv.data;
+            });
           });
       },
 
@@ -529,23 +530,27 @@ of the `data`, `layout` and `config` properties.
        *
        * @return {Polymer.Base} the current element
        *
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the purge that resolves to the
+       *  Polymer element.
+       *
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       purge: function () {
         var self = this;
 
-        Plotly.purge(self.$.plot);
+        return Promise.resolve(
+          Plotly.purge(self.$.plot)
+        ).then(function () {
+          // Safely clear all the properties
+          return self._safeUpdateProps(function () {
+            self.$.plot.data = [];
+            self.data = [];
 
-        // Safely clear all the properties
-        self._safeUpdateProps(function () {
-          self.$.plot.data = [];
-          self.data = [];
-
-          self.$.plot.layout = {};
-          self.layout = {};
+            self.$.plot.layout = {};
+            self.layout = {};
+          });
         });
-
-        return self;
       },
 
     });
