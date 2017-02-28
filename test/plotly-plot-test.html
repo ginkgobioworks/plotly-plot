@@ -313,6 +313,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // Purge does not return a promise: it's synchronous
             hardcodedPlot.purge().then(function (polymerPlot) {
               expect(polymerPlot.data).to.be.empty;
+              done();
             });
           });
         });
