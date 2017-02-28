@@ -11,7 +11,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
@@ -22,36 +23,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <body>
     <test-fixture id="plotly-plot-fixture-hardcoded">
       <template>
-        <plotly-plot id="hard-coded-plot"
-          data='[
-            {
-              "x": [1, 2, 3, 4],
-              "y": [10, 15, 13, 17],
-              "mode": "markers",
-              "type": "scatter"
-            },
-            {
-              "x": [2, 3, 4, 5],
-              "y": [16, 5, 11, 9],
-              "mode": "lines",
-              "type": "scatter"
-            },
-            {
-              "x": [1, 2, 3, 4],
-              "y": [12, 9, 15, 12],
-              "mode": "lines+markers",
-              "type": "scatter"
-            }
-          ]'
-          layout='
-            {
-              "title":"Line and Scatter Plot",
-              "height": 400,
-              "width": 480
-            }
-          '
-        >
-        </plotly-plot>
+        <div id="wrapper">
+          <plotly-plot id="hard-coded-plot"
+            data='[
+              {
+                "x": [1, 2, 3, 4],
+                "y": [10, 15, 13, 17],
+                "mode": "markers",
+                "type": "scatter"
+              },
+              {
+                "x": [2, 3, 4, 5],
+                "y": [16, 5, 11, 9],
+                "mode": "lines",
+                "type": "scatter"
+              },
+              {
+                "x": [1, 2, 3, 4],
+                "y": [12, 9, 15, 12],
+                "mode": "lines+markers",
+                "type": "scatter"
+              }
+            ]'
+            layout='
+              {
+                "title":"Line and Scatter Plot",
+                "height": 400,
+                "width": 480
+              }
+            '
+          >
+          </plotly-plot>
+        </div>
       </template>
     </test-fixture>
 
@@ -68,7 +71,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var sandbox;
 
         beforeEach(function () {
-          hardcodedPlot = fixture('plotly-plot-fixture-hardcoded');
+          hardcodedPlot = fixture('plotly-plot-fixture-hardcoded')
+            .querySelector('#hard-coded-plot');
           emptyPlot = fixture('plotly-plot-fixture-empty');
           sandbox = sinon.sandbox.create();
         });
@@ -154,10 +158,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
 
           it('should update specific traces by index', function () {
-            return hardcodedPlot.restyle({mode: 'lines'}, 0).then(function (polymerPlot) {
-              expect(polymerPlot.data[0].mode).to.equal('lines');
-              expect(polymerPlot.data[2].mode).to.not.equal('lines');
-            });
+            return hardcodedPlot.restyle({mode: 'lines'}, 0)
+              .then(function (polymerPlot) {
+                expect(polymerPlot.data[0].mode).to.equal('lines');
+                expect(polymerPlot.data[2].mode).to.not.equal('lines');
+              });
           });
 
           it('should update specific traces by index list', function () {
@@ -182,12 +187,63 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             var newTitle = 'Some other new title';
             return Promise.all([
               _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
-                return polymerPlot.relayout({title: newTitle}).then(function (resolvedPolymerPlot) {
+                return polymerPlot.relayout({
+                  title: newTitle,
+                }).then(function (resolvedPolymerPlot) {
                   expect(resolvedPolymerPlot.layout.title).to.equal(newTitle);
                 });
               })
             ]);
           });
+        });
+
+        describe('#resize', function () {
+          beforeEach(function () {
+            // Remove fixed size from layout properties
+            hardcodedPlot.layout = {title: 'AutoResize Plot'};
+          });
+
+          it('should change the size when called', function () {
+            expect(hardcodedPlot.layout.width).to.be.undefined;
+            hardcodedPlot.parentNode.style.width = '1000px';
+            expect(hardcodedPlot.parentNode.offsetWidth).to.equal(1000);
+
+            expect(
+              hardcodedPlot.$.plot
+              .querySelector('div.svg-container').offsetWidth
+            ).to.equal(480);
+
+            return hardcodedPlot.resize().then(function () {
+              expect(
+                hardcodedPlot.$.plot
+                .querySelector('div.svg-container').offsetWidth
+              ).to.equal(1000);
+            });
+          });
+
+          it('should change the size when called via event', function (done) {
+            expect(hardcodedPlot.layout.width).to.be.undefined;
+            hardcodedPlot.parentNode.style.width = '1000px';
+            expect(hardcodedPlot.parentNode.offsetWidth).to.equal(1000);
+
+            expect(
+              hardcodedPlot.$.plot
+              .querySelector('div.svg-container').offsetWidth
+            ).to.equal(480);
+
+            hardcodedPlot.fire('iron-resize');
+
+            // Call with setTimeout to put it in the event loop after the event
+            // fires and its consequences are realized
+            setTimeout(function () {
+              expect(
+                hardcodedPlot.$.plot
+                .querySelector('div.svg-container').offsetWidth
+              ).to.equal(1000);
+              done();
+            }, 100);
+          });
+
         });
 
         describe('#addTraces', function () {
@@ -311,8 +367,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         describe('#purge', function () {
           it('should clear the data property', function () {
             // Purge does not return a promise: it's synchronous
-            hardcodedPlot.purge();
-            expect(hardcodedPlot.data).to.be.empty;
+            return hardcodedPlot.purge().then(function (polymerPlot) {
+              expect(polymerPlot.data).to.be.empty;
+            });
           });
         });
       });

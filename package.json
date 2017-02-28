@@ -22,8 +22,9 @@
   "license": "SEE LICENSE IN http://polymer.github.io/LICENSE.txt",
   "homepage": "https://ginkgobioworks.github.io/plotly-plot/",
   "dependencies": {
-    "plotly.js": "^1.10.2",
-    "Polymer": "^1.6.0"
+    "Polymer": "^1.6.0",
+    "es6-promise": "^4.0.5",
+    "plotly.js": "^1.10.2"
   },
   "files": [
     "index.html",

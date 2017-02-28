@@ -31,6 +31,26 @@ Polymer element:
 <link rel="import" href="../plotly-plot/plotly-plot.html">
 ```
 
+### NOTE: plotly.js does not work with shadow DOM
+
+Polymer has two kinds of implementations: native shadow DOM, and a shim known as
+"shady DOM." Shadow DOM is newer and yields improved performance, but has
+incomplete support in browsers outside the newest Chrome and can sometimes
+cause problems with existing code. For this reason, shady DOM is still the
+default in Polymer 1.x.
+
+Unfortunately, shadow DOM is currently fundamentally incompatible with plotly.js.
+The icon toolbar layout code in the library fails, although the element thinks it
+rendered correctly and responds to JavaScript normally. This is a library-level
+issue and does not have to do with this element itself. I can't do anything
+about it until either plotly.js or the shadow DOM code change to accommodate one
+another.
+
+In the mean time, if you're using `<plotly-plot>`, make sure you
+_do not have `Polymer.dom = 'shadow'` in the global Polymer settings of your
+project_.
+
+
 ## Developing/contributing to `plotly-plot`
 
 ### Installing Dependencies
@@ -45,6 +65,9 @@ Installing dependencies:
 
     bower install
 
+Installing development dependencies
+
+    npm install
 
 ### Linting
 
@@ -104,6 +127,12 @@ Running all tests on chrome:
 `wct -p` will keep the browsers alive after test runs (refresh to re-run).
 
 `wct test/some-file.html` will test only the files you specify.
+
+
+### Travis
+
+On every merge request in this repo, linting and tests will automatically be
+performed by travis-ci.
 
 ### NPM
 
