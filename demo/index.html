@@ -85,6 +85,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <p>Dynamically set plot example:</p>
     <plotly-plot id="third-plot"></plotly-plot>
 
+    <p>Resizable plot example:</p>
+    <plotly-plot id="fourth-plot"
+      data='[
+        {
+          "x": [1, 2, 3, 4],
+          "y": [10, 15, 13, 17],
+          "mode": "markers",
+          "type": "scatter"
+        },
+        {
+          "x": [2, 3, 4, 5],
+          "y": [11, 17, 2, 4],
+          "mode": "lines",
+          "type": "scatter"
+        },
+        {
+          "x": [1, 2, 3, 4],
+          "y": [3, 4, 5, 6],
+          "mode": "lines+markers",
+          "type": "scatter"
+        }
+      ]'
+      layout='
+        {
+          "title":"Fourth Line and Scatter Plot"
+        }
+      '
+    >
+    </plotly-plot>
   </body>
 
   <script>
