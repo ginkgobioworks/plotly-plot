@@ -1,14 +1,11 @@
 language: node_js
+node_js: stable
+dist: trusty
 sudo: required
-before_script:
-- npm install -g bower polylint web-component-tester
-- bower install
-- polylint
 env:
   global:
   - secure: gZ5vpMlc9fuKSZeMmT6xf4+FIVWxET6f6Lkp6l5Qo9vL2X/KC/bMJF1v2w5xXFLFTdm/hPUDkeQRDUBBJhGcsXhJeWIvAXdPkObV9ZPRwpDnnN1qU5lOqVIy6gFjDm2Wm6UNXcRnyP1TrGpMwbG13EUtD0rF8LZqBm3B833sKS4=
   - secure: DObDewETPYiIsASeC3UETPbQ6YBniRZdNV2eTM1xULvuFNDxXJD09KKyWOiMduublEIJRXLjBIXmD8cbVsgrbRUYA4bxcXffDeuc6q6HaQGU9HvIbLz6o3/oxi4fX2G9GwrZtijW2p2Rgw2l9koR3ovjcM97CSTWFUMh5rtXag8=
-node_js: stable
 addons:
   firefox: latest
   apt:
@@ -16,9 +13,12 @@ addons:
     - google-chrome
     packages:
     - google-chrome-stable
+before_script:
+- npm install -g bower polylint web-component-tester
+- bower install
+- polylint
 script:
 - xvfb-run wct
-dist: trusty
 deploy:
   provider: npm
   email: misha@ginkgobioworks.com
@@ -27,3 +27,6 @@ deploy:
   on:
     tags: true
     repo: ginkgobioworks/plotly-plot
+  after_deploy:
+  # Deploy the documentation on GitHub Pages
+  - ./deploy/gp-build ginkgobioworks plotly-plot "Ginkgo Developer" devs@ginkgobioworks.com
