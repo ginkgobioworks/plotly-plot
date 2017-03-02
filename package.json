@@ -22,9 +22,10 @@
   "license": "SEE LICENSE IN http://polymer.github.io/LICENSE.txt",
   "homepage": "https://ginkgobioworks.github.io/plotly-plot/",
   "dependencies": {
+    "bower": "^1.7.9",
     "Polymer": "^1.6.0",
     "es6-promise": "^4.0.5",
-    "plotly.js": "^1.10.2"
+    "plotly.js": "^1.24.0"
   },
   "files": [
     "index.html",
@@ -37,7 +38,6 @@
     "test"
   ],
   "devDependencies": {
-    "bower": "^1.7.9",
     "polyserve": "^0.11.0",
     "polylint": "^2.10.1",
     "web-component-tester": "^4.0.0"
