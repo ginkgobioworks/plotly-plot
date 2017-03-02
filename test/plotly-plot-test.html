@@ -246,6 +246,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         });
 
+        describe('#update', function () {
+          it('should update the layout and data properties', function () {
+            var newTitle = 'Some other new title';
+            return Promise.all([
+              _([hardcodedPlot, emptyPlot]).map(function (polymerPlot) {
+                return polymerPlot.update({
+                  mode: 'lines',
+                }, {
+                  title: newTitle,
+                }).then(function (resolvedPolymerPlot) {
+                  // Layout update
+                  expect(resolvedPolymerPlot.layout.title).to.equal(newTitle);
+
+                  // Trace style update
+                  _(resolvedPolymerPlot).data.forEach(function (trace) {
+                    expect(trace.mode).to.equal('lines');
+                  });
+                });
+              })
+            ]);
+          });
+        });
+
         describe('#addTraces', function () {
           var newTrace = {
             x: [1, 2, 3, 4],

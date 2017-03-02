@@ -438,6 +438,40 @@ of the `data`, `layout` and `config` properties.
         });
       },
 
+      /**
+       * Update the data and layout simultaneously by passing in parameters
+       *
+       * @param {object} traceUpdate
+       *  attribute object `{astr1: val1, astr2: val2 ...}`
+       *  corresponding to updates in the plot's traces
+       * @param {object} layoutUpdate
+       *  attribute object `{astr1: val1, astr2: val2 ...}`
+       *  corresponding to updates in the plot's layout
+       * @param {number|Array<number>?} traces
+       *  integer or array of integers for the traces to alter (all if omitted)
+       *
+       * @return {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js#L2148|plotly.js source}
+       */
+      update: function (traceUpdate, layoutUpdate, traces) {
+        return Plotly.update(self.$.plot, traceUpdate, layoutUpdate, traces)
+          .then(function (plotDiv) {
+            // Remove any debounced relayout tasks waiting to go;
+            // prevent any further relayouts
+            self.cancelDebouncer('autoRelayout');
+
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
+            return self._safeUpdateProps(function () {
+              self.layout = plotDiv.layout;
+              self.data = plotDiv.data;
+            });
+          });
+      },
+
       // Manipulate traces
 
       /**
