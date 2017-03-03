@@ -228,7 +228,7 @@ project_.
         };
 
         return Plotly.newPlot(
-          self.$.plot, self.data, self.layout, self.config
+          self.getPlot(), self.data, self.layout, self.config
         ).then(function (plotDiv) {
           // Attach the polymer events to the plotly events.
           plotDiv.on('plotly_click', self._onPlotlyClick);
@@ -247,11 +247,11 @@ project_.
         // Protect detaching listeners in an if statement, because
         // `removeListener` is plotly.js functionality, which is removed
         // if .purge is called before the element is detached.
-        if (typeof this.$.plot.removeListener === 'function') {
-          this.$.plot.removeListener('plotly_click', this._onPlotlyClick);
-          this.$.plot.removeListener('plotly_beforehover', this._onPlotlyBeforehover);
-          this.$.plot.removeListener('plotly_hover', this._onPlotlyHover);
-          this.$.plot.removeListener('plotly_unhover', this._onPlotlyUnhover);
+        if (typeof this.getPlot().removeListener === 'function') {
+          this.getPlot().removeListener('plotly_click', this._onPlotlyClick);
+          this.getPlot().removeListener('plotly_beforehover', this._onPlotlyBeforehover);
+          this.getPlot().removeListener('plotly_hover', this._onPlotlyHover);
+          this.getPlot().removeListener('plotly_unhover', this._onPlotlyUnhover);
         }
 
         return;
@@ -273,6 +273,18 @@ project_.
        */
       _onIronResize: function () {
         return this.resize();
+      },
+
+
+      // Controlled access to the plot itself
+
+      /**
+       * Get the element that holds the plot itself
+       *
+       * @return {HTMLElement} the plot element
+       */
+      getPlot: function () {
+        return this.$.plot;
       },
 
 
@@ -332,7 +344,7 @@ project_.
        * // function API
        * pplot.call(Plotly.Queue.undo)
        * // either way amounts to basically doing the following:
-       * Plotly.queue.undo(pplot.$.plot)
+       * Plotly.queue.undo(pplot.getPlot())
        *
        * @param {!string|function} func
        *  the path to the function to call, or the function itself
@@ -388,10 +400,10 @@ project_.
         // Pull everything after the first argument into an array for an
         // .apply call, and prepend the plot div to it
         args = Array.prototype.slice.call(arguments, 1);
-        args.unshift(self.$.plot);
+        args.unshift(self.getPlot());
 
         // Call the function and store its return value
-        returnValue = requestedFunc.apply(self.$.plot, args);
+        returnValue = requestedFunc.apply(self.getPlot(), args);
 
         // Special promise-handling logic which we can do safely
         if (returnValue && typeof returnValue.then === 'function') {
@@ -399,21 +411,21 @@ project_.
             // Upddate the element properties to reflect any changes done to
             // the plot div by requestedFunc.
             self._safeUpdateProps(function () {
-              self.data = self.$.plot.data;
-              self.layout = self.$.plot.layout;
-              self.config = self.$.plot.config;
+              self.data = self.getPlot().data;
+              self.layout = self.getPlot().layout;
+              self.config = self.getPlot().config;
             });
 
             // Like our other methods, if requestedFunc resolves to the plot
             // div, resolve to the element itself instead.
-            if (resolvedValue === self.$.plot) {
+            if (resolvedValue === self.getPlot()) {
               return self;
             } else {
               return resolvedValue;
             }
           });
         } else {
-          return (returnValue === self.$.plot ? self : returnValue);
+          return (returnValue === self.getPlot() ? self : returnValue);
         }
       },
 
@@ -437,15 +449,15 @@ project_.
         var self = this;
 
         // XXX For some reason, this class gets removed and plotly.js complains
-        self.toggleClass('js-plotly-plot', true, self.$.plot);
+        self.toggleClass('js-plotly-plot', true, self.getPlot());
 
         // Set the plot data, layout, and config state to reflect the current
         // state of the polymer properties
-        self.$.plot.data = self.data;
-        self.$.plot.layout = self.layout;
-        self.$.plot.config = self.config;
+        self.getPlot().data = self.data;
+        self.getPlot().layout = self.layout;
+        self.getPlot().config = self.config;
 
-        return Plotly.redraw(self.$.plot).then(function () {
+        return Plotly.redraw(self.getPlot()).then(function () {
           // Remove any tasks waiting to go; prevent any further debounced
           // redraws
           self.cancelDebouncer('autoRedraw');
@@ -528,7 +540,7 @@ project_.
       restyle: function (style, traceIndices) {
         var self = this;
 
-        return Plotly.restyle(self.$.plot, style, traceIndices)
+        return Plotly.restyle(self.getPlot(), style, traceIndices)
           .then(function (plotDiv) {
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
@@ -554,7 +566,7 @@ project_.
       relayout: function (layoutUpdate) {
         var self = this;
 
-        return Plotly.relayout(self.$.plot, layoutUpdate)
+        return Plotly.relayout(self.getPlot(), layoutUpdate)
           .then(function (plotDiv) {
             // Remove any debounced relayout tasks waiting to go;
             // prevent any further relayouts
@@ -603,7 +615,7 @@ project_.
       resize: function () {
         var self = this;
 
-        return Plotly.Plots.resize(self.$.plot).then(function () {
+        return Plotly.Plots.resize(self.getPlot()).then(function () {
           return self;
         });
       },
@@ -629,7 +641,7 @@ project_.
       update: function (traceUpdate, layoutUpdate, traces) {
         var self = this;
 
-        return Plotly.update(self.$.plot, traceUpdate, layoutUpdate, traces)
+        return Plotly.update(self.getPlot(), traceUpdate, layoutUpdate, traces)
           .then(function (plotDiv) {
             // Remove any debounced relayout tasks waiting to go;
             // prevent any further relayouts
@@ -745,7 +757,7 @@ project_.
       addTraces: function (traces, traceIndices) {
         var self = this;
 
-        return Plotly.addTraces(self.$.plot, traces, traceIndices)
+        return Plotly.addTraces(self.getPlot(), traces, traceIndices)
           .then(function (plotDiv) {
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
@@ -771,7 +783,7 @@ project_.
       deleteTraces: function (traceIndices) {
         var self = this;
 
-        return Plotly.deleteTraces(self.$.plot, traceIndices)
+        return Plotly.deleteTraces(self.getPlot(), traceIndices)
           .then(function (plotDiv) {
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
@@ -801,7 +813,7 @@ project_.
       moveTraces: function (traceIndicesFrom, traceIndicesTo) {
         var self = this;
 
-        return Plotly.moveTraces(self.$.plot, traceIndicesFrom, traceIndicesTo)
+        return Plotly.moveTraces(self.getPlot(), traceIndicesFrom, traceIndicesTo)
           .then(function (plotDiv) {
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
@@ -841,7 +853,7 @@ project_.
       extendTraces: function (update, indices, maxPoints) {
         var self = this;
 
-        return Plotly.extendTraces(self.$.plot, update, indices, maxPoints)
+        return Plotly.extendTraces(self.getPlot(), update, indices, maxPoints)
           .then(function (plotDiv) {
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
@@ -881,7 +893,7 @@ project_.
       prependTraces: function (update, indices, maxPoints) {
         var self = this;
 
-        return Plotly.prependTraces(self.$.plot, update, indices, maxPoints)
+        return Plotly.prependTraces(self.getPlot(), update, indices, maxPoints)
           .then(function (plotDiv) {
             // Update the Polymer properties to reflect the updated data without
             // triggering any new relayout calls.
@@ -906,14 +918,14 @@ project_.
         var self = this;
 
         return Promise.resolve(
-          Plotly.purge(self.$.plot)
+          Plotly.purge(self.getPlot())
         ).then(function () {
           // Safely clear all the properties
           return self._safeUpdateProps(function () {
-            self.$.plot.data = [];
+            self.getPlot().data = [];
             self.data = [];
 
-            self.$.plot.layout = {};
+            self.getPlot().layout = {};
             self.layout = {};
           });
         });
@@ -937,7 +949,7 @@ project_.
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       toImage: function (opts) {
-        return Plotly.toImage(this.$.plot, opts);
+        return Plotly.toImage(this.getPlot(), opts);
       },
 
       /**
@@ -955,7 +967,7 @@ project_.
        * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
        */
       downloadImage: function (opts) {
-        return Plotly.downloadImage(this.$.plot, opts);
+        return Plotly.downloadImage(this.getPlot(), opts);
       },
 
 
