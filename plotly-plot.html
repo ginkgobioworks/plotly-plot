@@ -274,6 +274,129 @@ project_.
       },
 
 
+      // Generic implementation of any Plotly function
+
+      /**
+       * Return the value of a path on the Plotly object, or undefined if no
+       * such path exists.
+       *
+       * Amounts to a safe way to call `eval('Plotly.' + path)`.
+       *
+       * @param {string=} path the path to find
+       *
+       * @return {*} Whatever is located at Plotly.`path` */
+      getPlotly: function (path) {
+        if (typeof path === 'undefined') {
+          return Plotly;
+        } else if (typeof path !== 'string') {
+          throw new TypeError('Must pass string');
+        } else {
+          return this.get(path, Plotly);
+        }
+      },
+
+      /**
+       * Call a function in Plotly with the plot div as the first parameter.
+       * This method should _not_ be used to call functions like `redraw` or
+       * `relayout`, for which methods already exist. This is instead useful for
+       * a convenient way to access low-level or "undocumented," but supported
+       * functionality, such as the undo/redo queue. There are many functions
+       * implemented in the Plotly.js API in completely ready-to-use and stable
+       * ways, that are just not documented in the function reference yet.
+       *
+       * Caveat emptor. If you shoot yourself in the foot, consider yourself
+       * warned. This method cannot be robust enough to account for everything
+       * the plotly.js source exposes, and calling functions that are too
+       * low-level without doing the appropriate surrounding work is a sure-fire
+       * way to get in trouble.
+       *
+       * @example
+       * var pplot = document.querySelector('plotly-plot');
+       * // string API
+       * pplot.call('Queue.undo')
+       * // function API
+       * pplot.call(Plotly.Queue.undo)
+       * // either way amounts to basically doing the following:
+       * Plotly.queue.undo(pplot.$.plot)
+       *
+       * @param {!string|function} func
+       *  the path to the function to call, or the function itself
+       * @param {*...} args
+       *  arguments to pass to the method, if any
+       *
+       * @return {*}
+       *  if the function returns a promise, update the element properties
+       *  (data, layout, config) from the plot, in case they've changed after
+       *  the promise resolves. If the promise resolves to the plot div, make
+       *  that promise resolve to the element instead. Otherwise, just return
+       *  whatever the plot resolves to.
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/|plotly.js source}
+       */
+      call: function (func) {
+        var self = this;
+        var requestedFunc;
+        var args;
+        var returnValue;
+
+        // Check the sanity of the passed-in argument
+        if (!func) {
+          throw new ReferenceError('Must pass in a non-empty function name or path');
+        }
+
+        if (typeof func === 'string') {
+          requestedFunc = self.getPlotly(func);
+        } else if (typeof func === 'function') {
+          requestedFunc = func;
+        } else {
+          throw new TypeError('Must pass a function or a path to one inside Plotly namespace');
+        }
+
+        if (typeof requestedFunc === 'undefined') {
+          throw new ReferenceError('No function with the path "' + func + '" found');
+        } else if (typeof requestedFunc !== 'function') {
+          throw new TypeError('The path "' + func + '" does not resolve to a function');
+        }
+
+        if (requestedFunc.length < 1) {
+          throw new TypeError('The function "' + func + '" does not take a plot div argument');
+        }
+
+        // If we've gotten here, we can be confident that requestedFunc is a
+        // valid function that takes at least one parameter.
+
+        // Pull everything after the first argument into an array for an
+        // .apply call, and prepend the plot div to it
+        args = Array.prototype.slice.call(arguments, 1);
+        args.unshift(self.$.plot);
+
+        // Call the function and store its return value
+        returnValue = requestedFunc.apply(self.$.plot, args);
+
+        // Special promise-handling logic which we can do safely
+        if (returnValue && typeof returnValue.then === 'function') {
+          return returnValue.then(function (resolvedValue) {
+            // Upddate the element properties to reflect any changes done to
+            // the plot div by requestedFunc.
+            self._safeUpdateProps(function () {
+              self.data = self.$.plot.data;
+              self.layout = self.$.plot.layout;
+              self.config = self.$.plot.config;
+            });
+
+            // Like our other methods, if requestedFunc resolves to the plot
+            // div, resolve to the element itself instead.
+            if (resolvedValue === self.$.plot) {
+              return self;
+            } else {
+              return resolvedValue;
+            }
+          });
+        } else {
+          return (returnValue === self.$.plot ? self : returnValue);
+        }
+      },
+
 
       // Update the plot to reflect new data
 

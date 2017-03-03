@@ -313,6 +313,153 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         });
 
+        describe('#getPlotly', function () {
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should return direct properties for ' + polymerPlot.id, function () {
+              expect(polymerPlot.getPlotly('redraw')).to.equal(Plotly.redraw);
+              expect(polymerPlot.getPlotly('version')).to.equal(Plotly.version);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should return nested properties for ' + polymerPlot.id, function () {
+              expect(polymerPlot.getPlotly('Queue.undo')).to.equal(Plotly.Queue.undo);
+              expect(polymerPlot.getPlotly('Icons.camera')).to.equal(Plotly.Icons.camera);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should return undefined for nonexistand paths for ' + polymerPlot.id, function () {
+              expect(polymerPlot.getPlotly('Tizzlemat')).to.be.undefined;
+              expect(polymerPlot.getPlotly('Bazzlefruit.undo')).to.be.undefined;
+              expect(polymerPlot.getPlotly('Miltafrozz.mcslavabarad')).to.be.undefined;
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should return undefined for the null path for ' + polymerPlot.id, function () {
+              expect(polymerPlot.getPlotly('')).to.be.undefined;
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should return the Plotly object with no parameters for ' + polymerPlot.id, function () {
+              expect(polymerPlot.getPlotly()).to.equal(Plotly);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should throw a type errow with non-string input for ' + polymerPlot.id, function () {
+              expect(function () { polymerPlot.getPlotly(3); })
+              .to.throw(TypeError);
+            });
+          });
+        });
+
+        describe('#call', function () {
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should throw a ReferenceError if given something falsey for ' + polymerPlot.id, function () {
+              expect(function () { polymerPlot.call(''); })
+              .to.throw(ReferenceError, /non-empty/);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should throw a TypeError if given something besides a string or function for ' + polymerPlot.id, function () {
+              expect(function () { polymerPlot.call(3); })
+              .to.throw(TypeError, /Must pass a function/);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should throw a ReferenceError if given a nonexistent path for ' + polymerPlot.id, function () {
+              expect(function () { polymerPlot.call('fsasfaa90nafa'); })
+              .to.throw(ReferenceError, /No function with/);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should throw a TypeError if given a non-function path for ' + polymerPlot.id, function () {
+              expect(function () { polymerPlot.call('Icons.camera'); })
+              .to.throw(TypeError, /does not resolve to a function/);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should throw a TypeError if given a function that takes no params for ' + polymerPlot.id, function () {
+              expect(function () { polymerPlot.call('toString'); })
+              .to.throw(TypeError, /does not take a plot div/);
+              expect(function () { polymerPlot.call(function () { return; }); })
+              .to.throw(TypeError, /does not take a plot div/);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should pass the arguments and plot div to the function for ' + polymerPlot.id, function () {
+              expect(polymerPlot.call(
+                function (gd) { return Array.prototype.slice.call(arguments); }, 1, 'b', 3
+              )).to.deep.equal([polymerPlot.$.plot, 1, 'b', 3]);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should return a simple value if the function returns one for ' + polymerPlot.id, function () {
+              expect(polymerPlot.call(function (gd) { return 'somevalue'; }))
+              .to.equal('somevalue');
+
+              expect(polymerPlot.call(function (gd) { return ''; }))
+              .to.equal('');
+
+              expect(polymerPlot.call(function (gd) { return null; }))
+              .to.equal(null);
+
+              expect(polymerPlot.call(function (gd) { return; }))
+              .to.be.undefined;
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should return the plot element instead of the div for ' + polymerPlot.id, function () {
+              expect(polymerPlot.call(function (gd) { return gd; }))
+              .to.equal(polymerPlot);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should resolve to a simple value if the function resolves to one for ' + polymerPlot.id, function () {
+              return Promise.all([
+                polymerPlot.call(function (gd) { return Promise.resolve('somevalue'); })
+                .then(function (result) { expect(result).to.equal('somevalue'); }),
+                polymerPlot.call(function (gd) { return Promise.resolve(''); })
+                .then(function (result) { expect(result).to.equal(''); }),
+                polymerPlot.call(function (gd) { return Promise.resolve(''); })
+                .then(function (result) { expect(result).to.equal(''); }),
+                polymerPlot.call(function (gd) { return Promise.resolve(null); })
+                .then(function (result) { expect(result).to.equal(null); }),
+                polymerPlot.call(function (gd) { return Promise.resolve(undefined); })
+                .then(function (result) { expect(result).to.be.undefined; }),
+              ]).catch(fail);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should resolve to the plot element instead of the div for ' + polymerPlot.id, function () {
+              return polymerPlot.call(function (gd) { return Promise.resolve(gd); })
+              .then(function (result) { expect(result).to.equal(polymerPlot); })
+              .catch(fail);
+            });
+          });
+
+          _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
+            it('should call the intended function for ' + polymerPlot.id, function () {
+              var deleteTraces = sandbox.spy(Plotly, 'restyle');
+              return polymerPlot.call('restyle', 'marker.symbol', 'square').then(function () {
+                expect(deleteTraces.withArgs(polymerPlot.$.plot, 'marker.symbol', 'square').calledOnce).to.be.ok;
+              });
+            });
+          });
+        });
+
         describe('#addTraces', function () {
           var newTrace;
 
