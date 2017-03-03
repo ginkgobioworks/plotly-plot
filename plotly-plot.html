@@ -644,6 +644,86 @@ project_.
           });
       },
 
+      // Animation
+
+      /**
+       * Animate to a frame, sequence of frames, frame group, or frame
+       * definition
+       *
+       * @param {string|Object|Array<string|Object>} frames
+       *  a single frame, array of frames, or group to which to animate. The
+       *  intent is inferred by the type of the input. Valid inputs are:
+       *
+       *  - string, e.g. 'groupname': animate all frames of a given `group` in
+       *    the order in which they are defined via `Plotly.addFrames`.
+       *  - array of strings, e.g. ['frame1', frame2']: a list of frames by
+       *    name to which to animate in sequence
+       *  - object, e.g. {data: ...}: a frame definition to animate. The frame
+       *    is not and does not need to be added via `Plotly.addFrames`. It may
+       *    contain any of the properties of a frame, including `data`,
+       *    `layout`, and `traces`. The frame is used as provided and does not
+       *    use the `baseframe` property.
+       *  - array of objects, e.g. [{data: ...}, {data: ...}]: a list of frame
+       *    objects each following the same rules as a single object.
+       *
+       * @param {Object} options
+       *  configuration for the animation
+       *
+       * @returns {Promise}
+       *  when the animation completes
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
+       */
+      animate: function (frames, options) {
+        return this.call('animate', frames, options)
+      },
+
+      /**
+       * @typedef {Object} FrameDef
+       * @property {string} name name of frame to add
+       * @property {Array<Object>} data trace data
+       * @property {Object} layout layout definition
+       * @property {Array<number>} traces trace indices
+       * @property {string} baseframe name of frame from which this frame gets
+       *                              defaults
+       */
+
+      /**
+       * Register new frames
+       *
+       * @param {Array<FrameDef>} frames
+       *  list of frame definitions
+       *
+       * @param {Array<number>} indices
+       *  an array of integer indices matching the respective frames in
+       *  `frames`. If not provided, an index will be provided in serial
+       *  order. If already used, the frame will be overwritten.
+       *
+       * @returns {Promise}
+       *  when the frame changes complete
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
+       */
+      addFrames: function (frames, indices) {
+        return this.call('addFrames', frames, indices)
+      },
+
+      /**
+       * Register new frames
+       *
+       * @param {Array<number>} indices
+       *  an array of integer frame indices to delete
+       *
+       * @returns {Promise}
+       *  when the frame changes complete
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
+       */
+      deleteFrames: function (indices) {
+        return this.call('deleteFrames', indices)
+      },
+
+
       // Manipulate traces
 
       /**
@@ -732,6 +812,86 @@ project_.
       },
 
       /**
+       * Extend traces at indices with update arrays, window trace lengths to
+       * maxPoints
+       *
+       * .extend and .prepend have identical APIs. Prepend inserts an array at
+       * the head while Extend inserts an array off the tail. Prepend truncates
+       * the tail of the array, counting maxPoints from the head, whereas
+       * Extend truncates the head of the array, counting backward maxPoints
+       * from the tail.
+       *
+       * If maxPoints is undefined, nonNumeric, negative or greater than the
+       * extended trace length, no truncation / windowing will be performed.
+       * If it's zero, the whole trace is truncated.
+       *
+       * @param {Object} update
+       *  the key:array map of target attributes to extend
+       * @param {number|Array<number>} indices
+       *  the locations of traces to be extended
+       * @param {number=} maxPoints
+       *  number of points for trace window after lengthening.
+       *
+       * @returns {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
+       */
+      extendTraces: function (update, indices, maxPoints) {
+        var self = this;
+
+        return Plotly.extendTraces(self.$.plot, update, indices, maxPoints)
+          .then(function (plotDiv) {
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
+            return self._safeUpdateProps(function () {
+              self.data = plotDiv.data;
+            });
+          });
+      },
+
+      /**
+       * Prepend traces at indices with update arrays, window trace lengths to
+       * maxPoints
+       *
+       * .extend and .prepend have identical APIs. Prepend inserts an array at
+       * the head while Extend inserts an array off the tail. Prepend truncates
+       * the tail of the array, counting maxPoints from the head, whereas
+       * Extend truncates the head of the array, counting backward maxPoints
+       * from the tail.
+       *
+       * If maxPoints is undefined, nonNumeric, negative or greater than the
+       * extended trace length, no truncation / windowing will be performed.
+       * If it's zero, the whole trace is truncated.
+       *
+       * @param {Object} update
+       *  the key:array map of target attributes to extend
+       * @param {number|Array<number>} indices
+       *  the locations of traces to be extended
+       * @param {number=} maxPoints
+       *  number of points for trace window after lengthening.
+       *
+       * @returns {Promise<Polymer.Base>}
+       *  a Promise for the asynchronous plot update that resolves to the
+       *  Polymer element.
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
+       */
+      prependTraces: function (update, indices, maxPoints) {
+        var self = this;
+
+        return Plotly.prependTraces(self.$.plot, update, indices, maxPoints)
+          .then(function (plotDiv) {
+            // Update the Polymer properties to reflect the updated data without
+            // triggering any new relayout calls.
+            return self._safeUpdateProps(function () {
+              self.data = plotDiv.data;
+            });
+          });
+      },
+
+      /**
        * Clear all plots and snapshots.
        *
        * @returns {Polymer.Base} the current element
@@ -759,6 +919,46 @@ project_.
         });
       },
 
+
+      // Validation
+
+      /**
+       * @typedef {Object} ValidationError
+       * @property {string} code
+       *  error code ('object', 'array', 'schema', 'unused', 'invisible' or 'value')
+       * @property {string} container
+       *  container where the error occurs ('data' or 'layout')
+       * @property {number} trace
+       *  trace index of the 'data' container where the error occurs
+       * @property {array} path
+       *  nested path to the key that causes the error
+       * @property {string} astr
+       *  attribute string variant of 'path' compatible with Plotly.restyle and
+       *  Plotly.relayout.
+       * @property {string} msg
+       *  error message (shown in console if 'logger' config argument is enabled)
+       */
+
+      /**
+       * Validate the provided layout and data properties, defaulting to those
+       * of the of the plot element if none are provided. Does not change the
+       * properties of the plot.
+       *
+       * @param {Array<Object>=} data
+       *  the data that would go in the `data` property; if falsey, use the
+       *  plot's data property
+       * @param {Object=} layout
+       *  the data that would go in the `layout` property; if falsey, use the
+       *  plot's data property
+       *
+       * @returns {Array<ValidationError>|undefined}
+       *  an array of error objects; undefined if no errors found
+       *
+       * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/validate.js#L42|plotly.js source}
+       */
+      validate: function (data, layout) {
+        return Plotly.validate(data || this.data, layout || this.layout);
+      },
     });
   </script>
 </dom-module>
