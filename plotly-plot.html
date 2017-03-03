@@ -174,7 +174,7 @@ project_.
        * When the element is attached, create the plot and bind the Polymer
        * wrapper events to the plotly custom events.
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot creation that resolves to the
        *  Polymer element.
        */
@@ -263,7 +263,9 @@ project_.
       /**
        * Resize the plot when the containing element is resized.
        *
-       * @return {Promise<Polymer.Base>}
+       * @listens {iron-resize} Listens for the iron-resize event
+       *
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the resize action that resolves to the
        *  Polymer element.
        *
@@ -282,35 +284,48 @@ project_.
        *
        * Amounts to a safe way to call `eval('Plotly.' + path)`.
        *
-       * @param {string=} path the path to find
+       * @param {string=} path
+       *  the path to find; if missing, just return the Plotly object itself
        *
-       * @return {*} Whatever is located at Plotly.`path` */
+       * @returns {*} Whatever is located at Plotly.`path`
+       *
+       * @throws {TypeError} if a non-string value is passed.
+       */
       getPlotly: function (path) {
         if (typeof path === 'undefined') {
           return Plotly;
         } else if (typeof path !== 'string') {
-          throw new TypeError('Must pass string');
+          throw new TypeError('Must pass string as path');
         } else {
           return this.get(path, Plotly);
         }
       },
 
       /**
-       * Call a function in Plotly with the plot div as the first parameter.
+       * Call a function in the Plotly namespace by name, passing the plot div
+       * as the first parameter, or call any function passed in with the plot
+       * div as its first parameter.
+       *
        * This method should _not_ be used to call functions like `redraw` or
-       * `relayout`, for which methods already exist. This is instead useful for
-       * a convenient way to access low-level or "undocumented," but supported
-       * functionality, such as the undo/redo queue. There are many functions
-       * implemented in the Plotly.js API in completely ready-to-use and stable
-       * ways, that are just not documented in the function reference yet.
+       * `relayout`, for which methods already exist. This is instead useful
+       * for a convenient way to access low-level or "beta," functionality,
+       * such as the undo/redo queue. There are many functions implemented in
+       * this way in the Plotly.js API that are effectively ready to use, but
+       * have not been set in stone in the top-level API and documented in the
+       * function reference yet.
        *
-       * Caveat emptor. If you shoot yourself in the foot, consider yourself
-       * warned. This method cannot be robust enough to account for everything
-       * the plotly.js source exposes, and calling functions that are too
-       * low-level without doing the appropriate surrounding work is a sure-fire
-       * way to get in trouble.
+       * Caveat emptor. Plotly.js itself describes these functions as in beta,
+       * and warns that you  use them at your own risk. This method enforces
+       * basic consistency by throwing errors when you send something of the
+       * wrong, type or null, returning the Polymer element instead of the plot
+       * div, and updating the element properties after every call, but it
+       * cannot be robust enough to account for everything the plotly.js source
+       * exposes, and calling functions that are too low-level without doing
+       * the appropriate surrounding work is a sure-fire way to get in trouble.
+       * Make sure you know what you are doing, and expect that updates to
+       * plotly might break it.
        *
-       * @example
+       * @example <caption>Calling the 'undo' method</caption>
        * var pplot = document.querySelector('plotly-plot');
        * // string API
        * pplot.call('Queue.undo')
@@ -324,12 +339,17 @@ project_.
        * @param {*...} args
        *  arguments to pass to the method, if any
        *
-       * @return {*}
+       * @returns {*|Promise<*>}
        *  if the function returns a promise, update the element properties
        *  (data, layout, config) from the plot, in case they've changed after
        *  the promise resolves. If the promise resolves to the plot div, make
        *  that promise resolve to the element instead. Otherwise, just return
        *  whatever the plot resolves to.
+       *
+       * @throws {ReferenceError}
+       *  if it can't find the function or you give it nothing
+       * @throws {TypeError}
+       *  if what it finds isn't a function or you give invalid input
        *
        * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/|plotly.js source}
        */
@@ -407,7 +427,7 @@ project_.
        * do a lot of manipulation in multiple steps and then redraw at the end,
        * call this method.
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
        *
@@ -464,7 +484,7 @@ project_.
        *  a typical value, or void, is fine. The function is passed the element,
        *  followed by the current and former states of the manual flag.
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise that resolves to the element when the manual flag has been
        *  returned to its original value
        */
@@ -499,7 +519,7 @@ project_.
        *  a single index, or an array of indices of traces (the elements of
        *  `.data`) on which to apply the styles
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
        *
@@ -525,7 +545,7 @@ project_.
        * @param {Object} layoutUpdate
        *  the data to change in the `layout` property
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
        *
@@ -574,7 +594,7 @@ project_.
       /**
        * Resize the plot to fit in its container.
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the resize action that resolves to the
        *  Polymer element.
        *
@@ -600,7 +620,7 @@ project_.
        * @param {number|Array<number>=} traces
        *  integer or array of integers for the traces to alter (all if omitted)
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
        *
@@ -636,7 +656,7 @@ project_.
        *  an individual index or an array of indices specifying where to add
        *  the traces
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
        *
@@ -662,7 +682,7 @@ project_.
        *  an individual index or an array of indices specifying which traces to
        *  delete
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
 
@@ -692,7 +712,7 @@ project_.
        *  an individual index or an array of indices specifying where the
        *  traces should move
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the asynchronous plot update that resolves to the
        *  Polymer element.
        *
@@ -714,9 +734,9 @@ project_.
       /**
        * Clear all plots and snapshots.
        *
-       * @return {Polymer.Base} the current element
+       * @returns {Polymer.Base} the current element
        *
-       * @return {Promise<Polymer.Base>}
+       * @returns {Promise<Polymer.Base>}
        *  a Promise for the purge that resolves to the
        *  Polymer element.
        *
