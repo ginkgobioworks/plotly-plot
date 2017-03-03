@@ -920,6 +920,45 @@ project_.
       },
 
 
+      // Image rendering
+
+      /**
+       * Render the plot as an image, via a data URL
+       *
+       * @param {Object} opts option object
+       * @param {string} opts.format 'jpeg' | 'png' | 'webp' | 'svg'
+       * @param {number} opts.width width of snapshot in px
+       * @param {number} opts.height height of snapshot in px
+       *
+       * @returns {Promise<string>}
+       *  promise that resolves to the dataUrl of the resulting image when the
+       *  rendering is finished
+       *
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
+      toImage: function (opts) {
+        return Plotly.toImage(this.$.plot, opts);
+      },
+
+      /**
+       * Render the plot as an image and prompt to download it
+       *
+       * @param {Object} opts option object
+       * @param {string} opts.format 'jpeg' | 'png' | 'webp' | 'svg'
+       * @param {number} opts.width width of snapshot in px
+       * @param {number} opts.height height of snapshot in px
+       *
+       * @returns {Promise<string>}
+       *  promise that resolves to the dataUrl of the resulting image when the
+       *  rendering is finished
+       *
+       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
+       */
+      downloadImage: function (opts) {
+        return Plotly.downloadImage(this.$.plot, opts);
+      },
+
+
       // Validation
 
       /**
