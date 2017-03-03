@@ -14,12 +14,11 @@ addons:
     packages:
     - google-chrome-stable
 before_script:
-- npm install -g bower polylint web-component-tester
-- bower install
-- polylint
+- npm run bower:install
+- npm run polylint
 - npm run eslint
 script:
-- xvfb-run wct
+- xvfb-run npm run test
 deploy:
   provider: npm
   email: misha@ginkgobioworks.com

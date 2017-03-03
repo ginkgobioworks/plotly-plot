@@ -28,14 +28,17 @@
     "plotly.js": "^1.24.0"
   },
   "files": [
+    ".eslintrc.yaml",
+    "CONTRIBUTING.md",
+    "bower.json",
+    "demo",
     "index.html",
     "plotly-import.html",
+    "plotly-plot-behavior.html",
+    "plotly-plot-behavior.js",
     "plotly-plot.html",
-    "bower.json",
-    "wct.conf.json",
-    "CONTRIBUTING.md",
-    "demo",
-    "test"
+    "test",
+    "wct.conf.json"
   ],
   "devDependencies": {
     "eslint": "^3.16.1",
@@ -51,6 +54,11 @@
   "scripts": {
     "start": "polyserve",
     "test": "wct",
-    "eslint": "eslint *.js"
+    "bower": "bower",
+    "bower:install": "bower install",
+    "bower:update": "bower update",
+    "eslint": "eslint *.js && echo OK",
+    "polylint": "polylint && echo OK",
+    "lint": "npm run eslint && npm run polylint"
   }
 }
