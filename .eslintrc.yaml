@@ -1,0 +1,28 @@
+---
+  # vim: ft=yaml sw=2 ts=2 sts=2
+  extends: "airbnb-base/legacy"
+  rules:
+    comma-dangle:
+    - warn
+    - always-multiline
+    func-names: off
+    no-spaced-func: warn
+    space-before-function-paren:
+    - error
+    - anonymous: always
+      named: never
+    no-underscore-dangle: off
+    object-curly-spacing:
+    - error
+    - never
+    no-useless-return: off
+    no-else-return: off
+    wrap-iife:
+    - error
+    - inside
+    no-unused-vars:
+    - error
+    - argsIgnorePattern: ^_
+    no-param-reassign:
+    - off
+...

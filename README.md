@@ -31,20 +31,27 @@ Polymer element:
 <link rel="import" href="../plotly-plot/plotly-plot.html">
 ```
 
-### NOTE: plotly.js does not work with shadow DOM
+### NOTE: The plotly.js library is incompatible with shadow DOM
 
-Polymer has two kinds of implementations: native shadow DOM, and a shim known as
-"shady DOM." Shadow DOM is newer and yields improved performance, but has
-incomplete support in browsers outside the newest Chrome and can sometimes
-cause problems with existing code. For this reason, shady DOM is still the
-default in Polymer 1.x.
+Polymer elements, and web components in general, depend on being able to "hide"
+their inner DOM from the rest of the page. This is accomplished through a
+set of functionality known as the "shadow DOM."
 
-Unfortunately, shadow DOM is currently fundamentally incompatible with plotly.js.
-The icon toolbar layout code in the library fails, although the element thinks it
-rendered correctly and responds to JavaScript normally. This is a library-level
-issue and does not have to do with this element itself. I can't do anything
-about it until either plotly.js or the shadow DOM code change to accommodate one
-another.
+Polymer has two kinds of shadow DOM implementations: native shadow DOM, and a
+shim called "shady DOM." Native shadow DOM is newer and yields improved
+performance, but it has incomplete support in browsers outside the newest Chrome
+and can often cause problems with existing code. For this reason, shady DOM is
+still the default implementation in Polymer 1.x.
+
+Unfortunately, native shadow DOM is currently incompatible with plotly.js. The
+icon toolbar layout code in the plotly.js library fails for all plotly plots
+rendered inside a shadow DOM, whether by Polymer or any other means. The
+element cannot tell that the library code has misrendered. It acts as if it
+rendered correctly and responds to JavaScript normally.
+
+This is a library-level issue between plotly.js and the DOM. It does not have
+to do with this element itself, and `<plotly-plot>` can't do anything about it
+until either plotly.js or the shadow DOM code change to accommodate one another.
 
 In the mean time, if you're using `<plotly-plot>`, make sure you
 _do not have `Polymer.dom = 'shadow'` in the global Polymer settings of your
