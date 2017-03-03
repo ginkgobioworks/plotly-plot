@@ -17,6 +17,7 @@ before_script:
 - npm install -g bower polylint web-component-tester
 - bower install
 - polylint
+- npm run eslint
 script:
 - xvfb-run wct
 deploy:

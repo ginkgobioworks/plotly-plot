@@ -5,7 +5,8 @@
  * @license MIT
  */
 
-/* global Polymer, define */
+/* eslint-env browser, amd */
+/* global Polymer, Plotly, Promise */
 (function _umd(global, factory) {
   // UMD Format for exports. Works with all module systems: AMD/RequireJS, CommonJS, and global
   var mod;
@@ -23,7 +24,7 @@
     factory(mod.exports);
     global.PlotlyPlot = mod.exports;
   }
-})(this, function _plotlyPlotUmdFactory (exports) {
+})(this, function _plotlyPlotUmdFactory(exports) {
   /**
    * Defines how `plotly-plot` elements interact with plotly.js
    *
@@ -34,7 +35,7 @@
    *
    * @polymerBehavior PlotlyPlot.PlotlyPlotBehavior
    */
-  exports.PlotlyPlotBehavior = [ Polymer.IronResizableBehavior, {
+  exports.PlotlyPlotBehavior = [Polymer.IronResizableBehavior, {
     properties: {
       /**
        * The data and parameters of each of the traces to be plotted. An
@@ -465,7 +466,7 @@
       var self = this;
       var oldManual;
 
-      return new Promise(function (resolve, reject) {
+      return new Promise(function (resolve, _reject) {
         oldManual = self.manual;
         self.manual = true;
         resolve();
@@ -648,7 +649,7 @@
      * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
      */
     animate: function (frames, options) {
-      return this.call('animate', frames, options)
+      return this.call('animate', frames, options);
     },
 
     /**
@@ -678,7 +679,7 @@
      * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
      */
     addFrames: function (frames, indices) {
-      return this.call('addFrames', frames, indices)
+      return this.call('addFrames', frames, indices);
     },
 
     /**
@@ -693,7 +694,7 @@
      * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js|plotly.js source}
      */
     deleteFrames: function (indices) {
-      return this.call('deleteFrames', indices)
+      return this.call('deleteFrames', indices);
     },
 
 
