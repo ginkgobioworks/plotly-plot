@@ -85,7 +85,7 @@ project_.
           reflectToAttribute: true,
           notify: true,
           observer: '_autoRedraw',
-          value: function () { return [{x: [], y: []}]; }
+          value: function () { return [{x: [], y: []}]; },
         },
 
         /**
@@ -102,7 +102,7 @@ project_.
           reflectToAttribute: true,
           notify: true,
           observer: '_autoRelayout',
-          value: function () { return {}; }
+          value: function () { return {}; },
         },
 
         /**
@@ -120,7 +120,7 @@ project_.
           reflectToAttribute: true,
           notify: true,
           observer: '_autoRedraw',
-          value: function () { return {}; }
+          value: function () { return {}; },
         },
 
         /**
@@ -154,7 +154,7 @@ project_.
         // Redraw the plot after any of the nested data in the properties change
         '_autoRedraw(data.*)',
         '_autoRedraw(layout.*)',
-        '_autoRedraw(config.*)'
+        '_autoRedraw(config.*)',
       ],
 
       behaviors: [
@@ -244,7 +244,6 @@ project_.
        * When the element is detached, remove the attached Polymer events.
        */
       detached: function () {
-
         // Protect detaching listeners in an if statement, because
         // `removeListener` is plotly.js functionality, which is removed
         // if .purge is called before the element is detached.
@@ -317,13 +316,15 @@ project_.
        * Debounces the .redraw call.
        */
       _autoRedraw: function () {
+        var self = this;
+
         if (typeof self.manual !== 'undefined' && !self.manual) {
           // Limit the frequency of redraw tasks by putting them in a
           // debounce queue
-          this.debounce(
+          self.debounce(
             'autoRedraw',
-            this.redraw.bind(this),
-            this.debounceInterval
+            function () { return self.redraw(); },
+            self.debounceInterval
           );
         }
 
@@ -335,7 +336,7 @@ project_.
        * automatic actions they might be bound to, by turning on the 'manual'
        * flag temporarily
        *
-       * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>=} updateAction
+       * @param {function (Polymer.Base, boolean, boolean): Promise<*>|<*>} updateAction
        *  the action to take; if asynchronous, should return a Promise. Otherwise,
        *  a typical value, or void, is fine. The function is passed the element,
        *  followed by the current and former states of the manual flag.
@@ -467,13 +468,13 @@ project_.
       /**
        * Update the data and layout simultaneously by passing in parameters
        *
-       * @param {object} traceUpdate
+       * @param {Object} traceUpdate
        *  attribute object `{astr1: val1, astr2: val2 ...}`
        *  corresponding to updates in the plot's traces
-       * @param {object} layoutUpdate
+       * @param {Object=} layoutUpdate
        *  attribute object `{astr1: val1, astr2: val2 ...}`
        *  corresponding to updates in the plot's layout
-       * @param {number|Array<number>?} traces
+       * @param {number|Array<number>=} traces
        *  integer or array of integers for the traces to alter (all if omitted)
        *
        * @return {Promise<Polymer.Base>}
@@ -483,6 +484,8 @@ project_.
        * @see the {@link https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_api.js#L2148|plotly.js source}
        */
       update: function (traceUpdate, layoutUpdate, traces) {
+        var self = this;
+
         return Plotly.update(self.$.plot, traceUpdate, layoutUpdate, traces)
           .then(function (plotDiv) {
             // Remove any debounced relayout tasks waiting to go;
@@ -559,10 +562,10 @@ project_.
        * Move a specified set of traces from the plot to a newly specified set
        * of destination trace positions.
        *
-       * @param {(number|Array<number>)=} traceIndicesFrom
+       * @param {(number|Array<number>)} traceIndicesFrom
        *  an individual index or an array of indices specifying which traces to
        *  move
-       * @param {(number|Array<number>)=} traceIndicesTo
+       * @param {(number|Array<number>)} traceIndicesTo
        *  an individual index or an array of indices specifying where the
        *  traces should move
        *
