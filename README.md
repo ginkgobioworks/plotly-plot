@@ -22,10 +22,11 @@ For thorough documentation, visit the
 ## Using plotly-plot
 
 Install the element with Bower by adding it to your project's dependencies in
-`bower.json`.
+`bower.json`, or install via NPM/Yarn by adding it to your `package.json`. If
+you install over NPM, make sure your dependencies are flat, as Polymer HTML
+imports require it.
 
-Import the element into your project by using an HTML import, as with any other
-Polymer element:
+Import the element into your project by using an HTML import:
 
 ```html
 <link rel="import" href="../plotly-plot/plotly-plot.html">
@@ -62,86 +63,85 @@ project_.
 
 ### Installing Dependencies
 
-Element dependencies are managed via [Bower](http://bower.io/).
+Element dependencies are managed via [Bower](http://bower.io/) for the
+front-end/polymer components, and NPM for everything else.
 
-Installing Bower:
+Installing NPM dependencies
 
-    npm install -g bower
+```bash
+	$ npm install
+```
+Installing / updating Bower dependencies:
 
-Installing dependencies:
-
-    bower install
-
-Installing development dependencies
-
-    npm install
-
+```bash
+    $ npm run bower:install
+    $ npm run bower:update
+```
 ### Linting
 
+#### Polylint
 [Polylint](https://github.com/PolymerLabs/polylint) can be used to take into
 account Polymer linting specificities.
 
-Installing Polylint:
-
-    npm install -g polylint
-
-Running Polylint:
-
-	polylint -i polymer-plot.html
+```bash
+	$ npm run polylint
+```
 
 Polylint [documentation](https://github.com/PolymerLabs/polylint#polylint).
 
+#### ESLint
+[ESLint](http://eslint.org/) is used to lint the JavaScript.
+
+```bash
+	$ npm run eslint
+```
+
+Both can be run together:
+
+```bash
+	$ npm run lint
+```
 
 ### Dev server
 
 [Polyserve](https://github.com/PolymerLabs/polyserve) makes it easy to use the
-element while keeping bower dependencies in line. It works well as a development
+element while keeping Bower dependencies in line. It works well as a development
 server.
 
 Installing Polyserve:
 
-    npm install -g polyserve
+```bash
+	$ npm install -g polyserve
+```
 
 Running Polyserve:
 
-    polyserve
+```bash
+	$ npm start
+```
 
 Once running, `http://localhost:8080/components/plotly-plot/`, shows the
 index page of the element.
-
 
 ### Testing
 
 Navigate to `http://localhost:8080/components/plotly-plot/test/` (as served
 by Polyserve) to run the tests.
 
-### web-component-tester
+#### web-component-tester
+The tests are implemented with [web-component-tester](https://github.com/Polymer/web-component-tester).
+They can be run in a terminal:
 
-The tests are compatible with [web-component-tester](https://github.com/Polymer/web-component-tester).
-
-Installing `web-component-testser`:
-
-    npm install -g web-component-tester
-
-Running all tests on chrome:
-
-    wct
-
+```bash
+	$ npm test
+```
 #### WCT Tips
+- `npm test -- -l chrome` will only run tests in chrome.
+- `npm test -- -p` will keep the browsers alive after test runs (refresh to re-run).
+- `npm test -- test/some-file.html` will test only the files you specify.
 
-`wct -l chrome` will only run tests in chrome.
-
-`wct -p` will keep the browsers alive after test runs (refresh to re-run).
-
-`wct test/some-file.html` will test only the files you specify.
-
-
-### Travis
+### Continuous Integration: TravisCI
 
 On every merge request in this repo, linting and tests will automatically be
-performed by travis-ci.
-
-### NPM
-
-This project contains a `package.json` file which contains all of the necessary
-dependencies and scripts to make it easy to install and run with `npm` as well.
+performed by travis-ci. Tagged versions are automatically released to NPM and
+Bower.
