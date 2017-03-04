@@ -40,7 +40,7 @@ describe('<plotly-plot>', function () {
         var values = [4, 11, 23, 14];
         polymerPlot.set('data.0.x', values);
         expect(polymerPlot.$.plot.data[0].x).to.deep.equal(values);
-        polymerPlot.redraw()
+        polymerPlot.redraw();
         expect(polymerPlot.$.plot.data[0].x).to.deep.equal(values);
       });
     });
@@ -216,7 +216,6 @@ describe('<plotly-plot>', function () {
         done();
       }, timeout);
     });
-
   });
 
   describe('#update', function () {
@@ -332,23 +331,23 @@ describe('<plotly-plot>', function () {
     _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
       it('passes the arguments and plot div to the function for ' + polymerPlot.id, function () {
         expect(polymerPlot.call(
-          function (gd) { return Array.prototype.slice.call(arguments); }, 1, 'b', 3
+          function (_gd) { return Array.prototype.slice.call(arguments); }, 1, 'b', 3
         )).to.deep.equal([polymerPlot.$.plot, 1, 'b', 3]);
       });
     });
 
     _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
       it('returns a simple value if the function returns one for ' + polymerPlot.id, function () {
-        expect(polymerPlot.call(function (gd) { return 'somevalue'; }))
+        expect(polymerPlot.call(function (_gd) { return 'somevalue'; }))
         .to.equal('somevalue');
 
-        expect(polymerPlot.call(function (gd) { return ''; }))
+        expect(polymerPlot.call(function (_gd) { return ''; }))
         .to.equal('');
 
-        expect(polymerPlot.call(function (gd) { return null; }))
+        expect(polymerPlot.call(function (_gd) { return null; }))
         .to.equal(null);
 
-        expect(polymerPlot.call(function (gd) { return; }))
+        expect(polymerPlot.call(function (_gd) { return; }))
         .to.be.undefined;
       });
     });
@@ -363,15 +362,15 @@ describe('<plotly-plot>', function () {
     _.forEach([hardcodedPlot, emptyPlot], function (polymerPlot) {
       it('resolves to a simple value if the function resolves to one for ' + polymerPlot.id, function () {
         return Promise.all([
-          polymerPlot.call(function (gd) { return Promise.resolve('somevalue'); })
+          polymerPlot.call(function (_gd) { return Promise.resolve('somevalue'); })
           .then(function (result) { expect(result).to.equal('somevalue'); }),
-          polymerPlot.call(function (gd) { return Promise.resolve(''); })
+          polymerPlot.call(function (_gd) { return Promise.resolve(''); })
           .then(function (result) { expect(result).to.equal(''); }),
-          polymerPlot.call(function (gd) { return Promise.resolve(''); })
+          polymerPlot.call(function (_gd) { return Promise.resolve(''); })
           .then(function (result) { expect(result).to.equal(''); }),
-          polymerPlot.call(function (gd) { return Promise.resolve(null); })
+          polymerPlot.call(function (_gd) { return Promise.resolve(null); })
           .then(function (result) { expect(result).to.equal(null); }),
-          polymerPlot.call(function (gd) { return Promise.resolve(undefined); })
+          polymerPlot.call(function (_gd) { return Promise.resolve(undefined); })
           .then(function (result) { expect(result).to.be.undefined; }),
         ]).catch(fail);
       });
@@ -432,11 +431,12 @@ describe('<plotly-plot>', function () {
         var addTraceIndices = [0, 1];
         var newTraces = [newTrace, newTrace];
 
-        return polymerPlot.addTraces(newTraces, addTraceIndices).then(function (resolvedPolymerPlot) {
-          _.forEach(addTraceIndices, function (traceIndex, iterationIndex) {
-            expect(resolvedPolymerPlot.data[traceIndex]).to.contain(newTraces[iterationIndex]);
-          });
-        }).catch(fail);
+        return polymerPlot.addTraces(newTraces, addTraceIndices)
+          .then(function (resolvedPolymerPlot) {
+            _.forEach(addTraceIndices, function (traceIndex, iterationIndex) {
+              expect(resolvedPolymerPlot.data[traceIndex]).to.contain(newTraces[iterationIndex]);
+            });
+          }).catch(fail);
       });
     });
   });
