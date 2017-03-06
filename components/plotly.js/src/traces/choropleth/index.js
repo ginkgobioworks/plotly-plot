@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -15,10 +15,9 @@ Choropleth.attributes = require('./attributes');
 Choropleth.supplyDefaults = require('./defaults');
 Choropleth.colorbar = require('../heatmap/colorbar');
 Choropleth.calc = require('./calc');
-Choropleth.plot = require('./plot').plot;
-
-// add dummy hover handler to skip Fx.hover w/o warnings
-Choropleth.hoverPoints = function() {};
+Choropleth.plot = require('./plot');
+Choropleth.hoverPoints = require('./hover');
+Choropleth.eventData = require('./event_data');
 
 Choropleth.moduleType = 'trace';
 Choropleth.name = 'choropleth';

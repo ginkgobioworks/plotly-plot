@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -33,7 +33,9 @@ params.projNames = {
     'hammer': 'hammer',
     'transverse mercator': 'transverseMercator',
     'albers usa': 'albersUsa',
-    'winkel tripel': 'winkel3'
+    'winkel tripel': 'winkel3',
+    'aitoff': 'aitoff',
+    'sinusoidal': 'sinusoidal'
 };
 
 // name of the axes

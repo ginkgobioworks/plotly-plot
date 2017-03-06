@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -24,7 +24,6 @@ module.exports = function colorbar(gd, cd) {
 
     gd._fullLayout._infolayer.selectAll('.' + cbId).remove();
 
-    // TODO unify scatter and heatmap colorbar
     // TODO make Colorbar.draw support multiple colorbar per trace
 
     if((marker === undefined) || !marker.showscale) {

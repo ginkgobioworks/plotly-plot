@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -147,7 +147,7 @@ proto.createButton = function(config) {
     }
 
     button.setAttribute('data-toggle', config.toggle || false);
-    if(config.toggle) button.classList.add('active');
+    if(config.toggle) d3.select(button).classed('active', true);
 
     button.appendChild(this.createIcon(config.icon || Icons.question));
     button.setAttribute('data-gravity', config.gravity || 'n');

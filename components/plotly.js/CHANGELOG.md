@@ -10,6 +10,158 @@ https://github.com/plotly/plotly.js/compare/vX.Y.Z...master
 where X.Y.Z is the semver of most recent plotly.js release.
 
 
+## [1.24.0] -- 2017-02-27
+
+### Added
+- Add `parcoords` trace type (parallel coordinate plots) [#1256]
+- Add support for multiple range sliders [#1355]
+- Add `'aitoff'` and `'sinusoidal'` geo projection types [#1422]
+- Implement `scene.dragmode: false` to disable drag interaction on 3D subplots
+  [#1377]
+- Add `showAxisDragHandles` and `showAxisRangeEntryBoxes` configuration options
+  [#1389]
+- Add `customdata` attribute to scatter traces to add custom data to scatter SVG
+  nodes [#1379]
+
+### Changed
+- Consistent handling of array containers during `relayout` [#1403]
+- Improve hover for `choropleth` traces [#1401]
+- Make range slider handles and mask crispier [#1409]
+- Bump `country-regex` dependency to `1.1.0` [#1392]
+
+### Fixed
+- Fix 3D on iOS devices [#1411]
+- Fix `surface` trace opacity scaling [#1415]
+- Fix hover data in animations [#1274]
+- Fix annotations edit when dragging from one axis to another [#1403]
+- Fix 3D hover labels for date axes [#1414]
+- Deleting cartesian subplots now clear their corresponding axis titles [#1393]
+- Fix hover for xyz column `heatmap` trace `'text'` [#1417]
+- Fix `scattermapbox` lines with trailing gaps [#1421]
+- Make `restyle`, `relayout` and `update` not mutate input update objects [#1376]
+- Fix race condition in gl2d `toImage` [#1388]
+- Fix handling of `Virgin Islands` country name [#1392]
+- Fix `Plotly.validate` for `colorscale` attributes [#1420]
+
+
+## [1.23.2] -- 2017-02-15
+
+### Changed
+- Bower installs now fetch un-minified `dist/plotly.js` bundle [#1373]
+- Add package to packagist repository [#1375]
+
+
+## [1.23.1] -- 2017-02-13
+
+### Fixed
+- Fix `relayout` for `scene.camera` values [#1364]
+- Fix scaling on axis corner drag interactions for `bar` traces [#1370]
+- Allow `bar` and `histogram` traces to coexist on same subplot [#1365]
+- Fix `bar` position computations when placeholder traces are present [#1310]
+- Fix auto-axis-type routine for data-less `candelestick`traces [#1359]
+
+
+## [1.23.0] -- 2017-02-06
+
+### Added
+- Add scrollbox to long dropdown updatemenus [#1214]
+
+### Fixed
+- Multiple IE9 fixes [#1332]
+- Ensure that `plotly_afterplot` is fired before `Plotly.plot` promise is
+  resolved [#1342]
+- Fix exception when dragging graphs with empty text labels [#1336]
+- Fix exception when creating empty `ohlc` and `candlestick` traces [#1348]
+- Fix `editable: true` legend items logic for `ohlc` and `candlestick` traces [#1349]
+- Fix restyle for contour traces in cases where autocontour is defaulted to true
+  [#1338]
+- Fix edge case in axis label tick assignments [#1324]
+- Fix vanishing titles text in `editable: true` [#1351]
+- Fix 3D thumbnail image generation [#1327]
+
+
+## [1.22.0] -- 2017-01-19
+
+### Added
+- Add `cumulative` histogram attributes to generate Cumulative Distribution
+  Functions [#1189]
+- Add `standoff` attribute for annotations to move the arrowhead away from the
+  point it's marking [#1265]
+- Add `clicktoshow`, `xclick` and `yclick` attributes for annotations to
+  show/hide annotations on click [#1265]
+- Support data-referenced annotation in gl2d subplots [#1301, #1319]
+- Honor `fixedrange: false` in y-axes anchored to xaxis with range slider
+  [#1261]
+- Add fallbacks for IE9 so that all cartesian traces can render without any
+  polyfill [#1297, #1299]
+
+### Changed
+- Adapt plot schema output for plotly.py 2.0 [#1292]
+- Bump `mouse-change` dep to `^1.4.0` [#1305]
+- Improve performance in `visible` toggling for `scattergl` [#1300]
+
+### Fixed
+- Fix XSS vulnerability in trace name on hover [#1307]
+- Fix ternary and geo subplot with `visible: false` first trace [#1291]
+- Fix opacity for `mode: 'lines'` items in legend [#1204]
+- Fix legend items style for bar trace with marker arrays [#1289]
+- Fix range slider svg / pdf and eps image exports [#1306]
+- Fix scattergl `visible: false` traces with empty data arrays [#1300]
+- Fix a few contour trace edge cases [#1309]
+- Updatemenus buttons now render above sliders [#1302]
+- Add fallback for categorical histogram on linear axes [#1284]
+- Allow style fields in sub and sup text [#1288]
+
+
+## [1.21.3] -- 2017-01-05
+
+### Fixed
+- Fix zoom behavior on transformed traces [#1257]
+- Compute axis auto-range after transform operation [#1260]
+- Fix contour trace blowing up on zoom [#591]
+- Fix `scattermapbox` and `scattergeo` handling of blank strings `text` [#1283]
+- Lock `mouse-change@1.3.0` fixing 3D hover labels on fresh `npm install`
+  [#1281]
+
+
+## [1.21.2] -- 2016-12-14
+
+### Fixed
+- Fix handling of calendar in `filter` transforms where distinct calendars can
+  now be set for both the `target` and `value` [#1253]
+- Make `Plotly.addFrames` skip over non-plain-objects inputs [#1254]
+- Make `Plots.graphJson` aware of `frames` [#1255]
+
+
+## [1.21.1] -- 2016-12-14
+
+### Fixed
+- Fix `ms2datetime` routine for Chinese calendar [#1252]
+- Fix `tickformat` for world calendars [#1252]
+
+
+## [1.21.0] -- 2016-12-12
+
+### Added
+- Bar labels via `text` and `textposition` [#1159]
+- Add support for 16 non-gregorian calendars for date inputs and display [#1220,
+  #1230, #1237]
+- Add support for ISO-8601 timestamps [#1194]
+- Extend histogram bin auto-shifting algorithm to date axes [#1201]
+- Trace type `heatmapgl` is now included in the main plotly.js bundle [#1197]
+
+### Changed
+- Linearize date coordinates using UTC rather than local milliseconds [#1194]
+
+### Fixed
+- Fix wrongly computed date positions around daylight savings time [#1194]
+- Fix erroneous traces in multi-subplot layout containing fill-to scatter
+  traces (and plotly.py violin plots) [#1198]
+- Fix clip path URL on pages with query hashes [#1203]
+- Ensure that numeric frame name are handle correctly [#1236]
+- Fallback for manual manipulation of slider/frames [#1233]
+
+
 ## [1.20.5] -- 2016-11-23
 
 ### Fixed

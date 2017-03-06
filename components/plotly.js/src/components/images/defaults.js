@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -37,8 +37,6 @@ function imageDefaults(imageIn, imageOut, fullLayout) {
     if(!visible) return imageOut;
 
     coerce('layer');
-    coerce('x');
-    coerce('y');
     coerce('xanchor');
     coerce('yanchor');
     coerce('sizex');
@@ -51,7 +49,10 @@ function imageDefaults(imageIn, imageOut, fullLayout) {
 
     for(var i = 0; i < 2; i++) {
         // 'paper' is the fallback axref
-        Axes.coerceRef(imageIn, imageOut, gdMock, axLetters[i], 'paper');
+        var axLetter = axLetters[i],
+            axRef = Axes.coerceRef(imageIn, imageOut, gdMock, axLetter, 'paper');
+
+        Axes.coercePosition(imageOut, gdMock, coerce, axRef, axLetter, 0);
     }
 
     return imageOut;

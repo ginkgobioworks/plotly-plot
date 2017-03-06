@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -49,6 +49,7 @@ var buttonsAttrs = {
 
 module.exports = {
     _isLinkedToArray: 'updatemenu',
+    _arrayAttrRegexps: [/^updatemenus\[(0|[1-9][0-9]+)\]\.buttons/],
 
     visible: {
         valType: 'boolean',

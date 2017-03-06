@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -29,6 +29,16 @@ module.exports = {
         min: 0,
         role: 'style',
         description: 'Sets the border color of the range slider.'
+    },
+    autorange: {
+        valType: 'boolean',
+        dflt: true,
+        role: 'style',
+        description: [
+            'Determines whether or not the range slider range is',
+            'computed in relation to the input data.',
+            'If `range` is provided, then `autorange` is set to *false*.'
+        ].join(' ')
     },
     range: {
         valType: 'info_array',

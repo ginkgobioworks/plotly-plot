@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -31,6 +31,8 @@ Plotly.register([
 
     require('./scattergl'),
     require('./pointcloud'),
+    require('./heatmapgl'),
+    require('./parcoords'),
 
     require('./scattermapbox'),
 
@@ -51,6 +53,11 @@ Plotly.register([
 Plotly.register([
     require('./filter'),
     require('./groupby')
+]);
+
+// components
+Plotly.register([
+    require('./calendars')
 ]);
 
 module.exports = Plotly;

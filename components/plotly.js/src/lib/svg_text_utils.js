@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -48,6 +48,7 @@ exports.html_entity_decode = function(s) {
     var replaced = s.replace(/(&[^;]*;)/gi, function(d) {
         if(d === '&lt;') { return '&#60;'; } // special handling for brackets
         if(d === '&rt;') { return '&#62;'; }
+        if(d.indexOf('<') !== -1 || d.indexOf('>') !== -1) { return ''; }
         return hiddenDiv.html(d).text(); // everything else, let the browser decode it to unicode
     });
     hiddenDiv.remove();
@@ -249,6 +250,8 @@ var UNICODE_TO_ENTITY = Object.keys(stringMappings.unicodeToEntity).map(function
     };
 });
 
+var NEWLINES = /(\r\n?|\n)/g;
+
 exports.plainText = function(_str) {
     // strip out our pseudo-html so we have a readable
     // version to put into text fields
@@ -276,6 +279,13 @@ function encodeForHTML(_str) {
 
 function convertToSVG(_str) {
     _str = convertEntities(_str);
+
+    // normalize behavior between IE and others wrt newlines and whitespace:pre
+    // this combination makes IE barf https://github.com/plotly/plotly.js/issues/746
+    // Chrome and FF display \n, \r, or \r\n as a space in this mode.
+    // I feel like at some point we turned these into <br> but currently we don't so
+    // I'm just going to cement what we do now in Chrome and FF
+    _str = _str.replace(NEWLINES, ' ');
 
     var result = _str
         .split(/(<[^<>]*>)/).map(function(d) {
@@ -335,7 +345,7 @@ function convertToSVG(_str) {
                         // most of the svg css users will care about is just like html,
                         // but font color is different. Let our users ignore this.
                         extraStyle = extraStyle[1].replace(/(^|;)\s*color:/, '$1 fill:');
-                        style = (style ? style + ';' : '') + encodeForHTML(extraStyle);
+                        style = encodeForHTML(extraStyle) + (style ? ';' + style : '');
                     }
 
                     return tspanStart + (style ? ' style="' + style + '"' : '') + '>';

@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="plotly-import.html">
+<link rel="import" href="plotly-plot-behavior.html">
 
 <!--
 Polymer element for the plotly.js library
@@ -28,6 +28,32 @@ change several parameters, and then call `.redraw`.
 See the [plotly.js docs](https://plot.ly/javascript/reference/) for a full explanation
 of the `data`, `layout` and `config` properties.
 
+### NOTE: The plotly.js library is incompatible with shadow DOM
+
+Polymer elements, and web components in general, depend on being able to "hide"
+their inner DOM from the rest of the page. This is accomplished through a
+set of functionality known as the "shadow DOM."
+
+Polymer has two kinds of shadow DOM implementations: native shadow DOM, and a
+shim called "shady DOM." Native shadow DOM is newer and yields improved
+performance, but it has incomplete support in browsers outside the newest Chrome
+and can often cause problems with existing code. For this reason, shady DOM is
+still the default implementation in Polymer 1.x.
+
+Unfortunately, native shadow DOM is currently incompatible with plotly.js. The
+icon toolbar layout code in the plotly.js library fails for all plotly plots
+rendered inside a shadow DOM, whether by Polymer or any other means. The
+element cannot tell that the library code has misrendered. It acts as if it
+rendered correctly and responds to JavaScript normally.
+
+This is a library-level issue between plotly.js and the DOM. It does not have
+to do with this element itself, and `<plotly-plot>` can't do anything about it
+until either plotly.js or the shadow DOM code change to accommodate one another.
+
+In the mean time, if you're using `<plotly-plot>`, make sure you
+_do not have `Polymer.dom = 'shadow'` in the global Polymer settings of your
+project_.
+
 @demo demo/index.html
 -->
 
@@ -41,406 +67,9 @@ of the `data`, `layout` and `config` properties.
   <script>
     Polymer({
       is: 'plotly-plot',
-
-      properties: {
-        /**
-         * The data and parameters of each of the traces to be plotted. An
-         * array of nested object that significantly depends on the plot type,
-         * etc.
-         *
-         * @type {Array<Object>}
-         * @default [{x: [], y: []}]
-         *
-         * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
-         */
-        data: {
-          type: Array,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_autoRedraw',
-          value: function () { return [{x: [], y: []}]; }
-        },
-
-        /**
-         * Settings for the layout of the plot as  a whole:
-         * width, height, title, etc.
-         *
-         * @type {Object}
-         * @default {}
-         *
-         * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
-         */
-        layout: {
-          type: Object,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_autoRelayout',
-          value: function () { return {}; }
-        },
-
-        /**
-         * Top-level configurations for features in the library: whether or
-         * not to show the toolbar, plot.ly icon, whether or not to make the
-         * plot static, etc.
-         *
-         * @type {Object}
-         * @default {}
-         *
-         * @see the {@link https://plot.ly/javascript/reference/|plotly.js docs}
-         */
-        config: {
-          type: Object,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_autoRedraw',
-          value: function () { return {}; }
-        },
-
-        /**
-         * If true, manually update the plot instead of having it automatically
-         * redraw itself on property changes.
-         *
-         * @type {boolean}
-         * @default false
-         */
-        manual: {
-          type: Boolean,
-          reflectToAttribute: true,
-          notify: true,
-          value: false,
-        },
-
-        /**
-         * How often to allow automatic redraw events to fire. At most one such
-         * event will happen every this number of milliseconds.
-         *
-         * @type { number }
-         * @default 300
-         */
-        debounceInterval: {
-          type: Number,
-          value: 300,
-        },
-      },
-
-      observers: [
-        // Redraw the plot after any of the nested data in the properties change
-        '_autoRedraw(data.*)',
-        '_autoRedraw(layout.*)',
-        '_autoRedraw(config.*)'
+      behaviors: [
+        PlotlyPlot.PlotlyPlotBehavior,
       ],
-
-
-      // Life Cycle
-
-      /**
-       * When the element is attached, create the plot, and bind the Polymer
-       * wrapper events to the plotly custom events.
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot creation that resolves to the
-       *  Polymer element.
-       */
-      attached: function () {
-        var self = this;
-        // Fire Polymer events in accordance with the plotly.js ones as well.
-        // These event handlers need to be bound to variables because of
-        // event binding and unbinding upon attach/detach/reattach
-
-        /**
-         * Custom plotly-specific click event for tracking clicks on the chart.
-         *
-         * @event plotly-click
-         * @see the {@link https://plot.ly/javascript/plotlyjs-events/|events reference}
-         */
-        self._onPlotlyClick = function (data) {
-          return self.fire('plotly-click', {data: data});
-        };
-
-        /**
-         * Custom plotly-specific event for tracking hovers on the chart.
-         * Fires before the hover happens.
-         *
-         * @event plotly-beforehover
-         * @see the {@link https://plot.ly/javascript/hover-events/|hover events tutorial}
-         */
-        self._onPlotlyBeforehover = function (data) {
-          return self.fire('plotly-beforehover', {data: data});
-        };
-
-        /**
-         * Custom plotly-specific event for tracking hovers on the chart.
-         * Fires during the hover.
-         *
-         * @event plotly-hover
-         * @see the {@link https://plot.ly/javascript/hover-events/|hover events tutorial}
-         */
-        self._onPlotlyHover = function (data) {
-          return self.fire('plotly-hover', {data: data});
-        };
-
-        /**
-         * Custom plotly-specific event for tracking hovers on the chart.
-         * Fires when the hover ends.
-         *
-         * @event plotly-unhover
-         * @see the {@link https://plot.ly/javascript/hover-events/|hover events tutorial}
-         */
-        self._onPlotlyUnhover = function (data) {
-          return self.fire('plotly-unhover', {data: data});
-        };
-
-        return Plotly.newPlot(
-          self.$.plot, self.data, self.layout, self.config
-        ).then(function (plotDiv) {
-          // Attach the polymer events to the plotly events.
-          plotDiv.on('plotly_click', self._onPlotlyClick);
-          plotDiv.on('plotly_beforehover', self._onPlotlyBeforehover);
-          plotDiv.on('plotly_hover', self._onPlotlyHover);
-          plotDiv.on('plotly_unhover', self._onPlotlyUnhover);
-
-          return self;
-        });
-      },
-
-      /**
-       * When the element is detached, remove the attached Polymer events
-       */
-      detached: function () {
-        // Protect this in an if statement because if .purge is called before
-        // the element is detached, the events and event functions are also
-        // removed.
-
-        if (typeof this.$.plot.removeListener === 'function') {
-          this.$.plot.removeListener('plotly_click', this._onPlotlyClick);
-          this.$.plot.removeListener('plotly_beforehover', this._onPlotlyBeforehover);
-          this.$.plot.removeListener('plotly_hover', this._onPlotlyHover);
-          this.$.plot.removeListener('plotly_unhover', this._onPlotlyUnhover);
-        }
-
-        return;
-      },
-
-
-      // Update the plot to reflect new data
-
-      /**
-       * Redraw the plot using the current state of the widget's properties.
-       *
-       * This should happen automatically if you use `.set`, but if you want to
-       * do a lot of manipulation in multiple steps and then redraw at the end,
-       * call this method.
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot update that resolves to the
-       *  Polymer element.
-       *
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      redraw: function () {
-        var self = this;
-
-        // XXX For some reason, this class gets removed and plotly.js complains
-        self.toggleClass('js-plotly-plot', true, self.$.plot);
-
-        // Set the plot data, layout, and config state to reflect the current
-        // state of the polymer properties
-        self.$.plot.data = self.data;
-        self.$.plot.layout = self.layout;
-        self.$.plot.config = self.config;
-
-        return Plotly.redraw(self.$.plot).then(function () {
-          // Remove any tasks waiting to go; prevent any further debounced
-          // redraws
-          self.cancelDebouncer('autoRedraw');
-
-          return self;
-        });
-      },
-
-      /**
-       * Automatically redraw the plot on data updates, if not manual.
-       * Debounces the .redraw call.
-       */
-      _autoRedraw: function () {
-        if (! this.manual) {
-          this.debounce(
-            'autoRedraw',
-            this.redraw.bind(this),
-            this.debounceInterval
-          );
-        }
-
-        return;
-      },
-
-      /**
-       * Restyle the plot with updates to all (or a specified subset of) the
-       * traces.
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot update that resolves to the
-       *  Polymer element.
-       *
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      restyle: function (style, traceIndices) {
-        var self = this;
-        return Plotly.restyle(self.$.plot, style, traceIndices)
-          .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
-            return self;
-          });
-      },
-
-      /**
-       * Update the plot layout.
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot update that resolves to the
-       *  Polymer element.
-       *
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      relayout: function (layoutUpdate) {
-        var self = this;
-        return Plotly.relayout(self.$.plot, layoutUpdate)
-          .then(function (plotDiv) {
-            var oldManual;
-
-            // Remove any tasks waiting to go; prevent any further relayouts
-            self.cancelDebouncer('autoRelayout');
-
-            // Safely Update the polymer properties to reflect the updated data
-            oldManual = self.manual;
-            self.manual = true;
-            self.layout = plotDiv.layout;
-            self.manual = oldManual;
-
-            return self;
-          });
-      },
-
-      /**
-       * Automatically redraw the plot on layout updates, if not manual.
-       * Debounces the .relayout call.
-       */
-      _autoRelayout: function (layoutUpdate) {
-        var self = this;
-
-        if (! self.manual) {
-          self.debounce(
-            'autoRelayout',
-            function () { self.relayout(layoutUpdate); },
-            self.debounceInterval
-          );
-        }
-
-        return;
-      },
-
-
-      // Manipulate traces
-
-      /**
-       * Add traces to the plot in the specified indices, if provided.
-       *
-       * @param {(Object|Array<Object>)} traces
-       *  an individual trace, as an object of trace information, or an array
-       *  of those traces
-       * @param {(number|Array<number>)=} traceIndices
-       *  an individual index or an array of indices specifying where to add
-       *  the traces
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot update that resolves to the
-       *  Polymer element.
-       *
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      addTraces: function (traces, traceIndices) {
-        var self = this;
-        return Plotly.addTraces(self.$.plot, traces, traceIndices)
-          .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
-            return self;
-          });
-      },
-
-      /**
-       * Delete the specified traces from the plot.
-       *
-       * @param {(number|Array<number>)=} traceIndices
-       *  an individual index or an array of indices specifying which traces to
-       *  delete
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot update that resolves to the
-       *  Polymer element.
-
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      deleteTraces: function (traceIndices) {
-        var self = this;
-        return Plotly.deleteTraces(self.$.plot, traceIndices)
-          .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
-
-            return self;
-          });
-      },
-
-      /**
-       * Move a specified set traces from the plot to a newly specified set of
-       * destination trace positions.
-       *
-       * @param {(number|Array<number>)=} traceIndicesFrom
-       *  an individual index or an array of indices specifying which traces to
-       *  move
-       * @param {(number|Array<number>)=} traceIndicesTo
-       *  an individual index or an array of indices specifying where the
-       *  traces should move
-       *
-       * @return {Promise<Polymer.Base>}
-       *  a Promise for the asynchronous plot update that resolves to the
-       *  Polymer element.
-       *
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      moveTraces: function (traceIndicesFrom, traceIndicesTo) {
-        var self = this;
-
-        return Plotly.moveTraces(self.$.plot, traceIndicesFrom, traceIndicesTo)
-          .then(function (plotDiv) {
-            // Update the polymer properties to reflect the updated data
-            self.data = plotDiv.data;
-
-            return self;
-          });
-      },
-
-      /**
-       * Clear all plots and snapshots.
-       *
-       * @return {Polymer.Base} the current element
-       *
-       * @see the {@link https://plot.ly/javascript/plotlyjs-function-reference/|plotly.js function reference}
-       */
-      purge: function () {
-        Plotly.purge(this.$.plot);
-
-        this.$.plot.data = [];
-        this.data = [];
-
-        this.$.plot.layout = {};
-        this.layout = {};
-
-        return this;
-      },
-
     });
   </script>
 </dom-module>

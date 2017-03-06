@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -55,6 +55,10 @@ module.exports = {
             'Use with `dy`',
             'where `y0` is the starting coordinate and `dy` the step.'
         ].join(' ')
+    },
+    customdata: {
+        valType: 'data_array',
+        description: 'Assigns extra data to each scatter point DOM element'
     },
     dy: {
         valType: 'number',

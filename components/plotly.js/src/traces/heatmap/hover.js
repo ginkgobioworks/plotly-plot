@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -96,8 +96,8 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode, contour)
     if(zmask && !zmask[ny][nx]) zVal = undefined;
 
     var text;
-    if(Array.isArray(trace.text) && Array.isArray(trace.text[ny])) {
-        text = trace.text[ny][nx];
+    if(Array.isArray(cd0.text) && Array.isArray(cd0.text[ny])) {
+        text = cd0.text[ny][nx];
     }
 
     return [Lib.extendFlat(pointData, {

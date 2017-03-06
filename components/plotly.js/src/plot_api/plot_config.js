@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -47,6 +47,12 @@ module.exports = {
 
     // new users see some hints about interactivity
     showTips: true,
+
+    // enable axis pan/zoom drag handles
+    showAxisDragHandles: true,
+
+    // enable direct range entry at the pan/zoom drag points (drag handles must be enabled above)
+    showAxisRangeEntryBoxes: true,
 
     // link to open this plot in plotly
     showLink: false,

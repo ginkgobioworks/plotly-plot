@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -41,11 +41,10 @@ module.exports = {
     grabAreaFill: 'transparent',
     grabAreaCursor: 'col-resize',
     grabAreaWidth: 10,
-    grabAreaMinOffset: -6,
-    grabAreaMaxOffset: -2,
 
-    handleWidth: 2,
+    handleWidth: 4,
     handleRadius: 1,
-    handleFill: '#fff',
-    handleStroke: '#666',
+    handleStrokeWidth: 1,
+
+    extraPad: 15
 };

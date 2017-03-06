@@ -1,6 +1,6 @@
 {
   "name": "plotly-plot",
-  "version": "0.3.1",
+  "version": "0.5.0",
   "author": "Misha Wolfson <misha@ginkgobioworks.com>",
   "description": "A Polymer element providing an interface to the plotly.js library",
   "repository": {
@@ -22,23 +22,32 @@
   "license": "SEE LICENSE IN http://polymer.github.io/LICENSE.txt",
   "homepage": "https://ginkgobioworks.github.io/plotly-plot/",
   "dependencies": {
-    "plotly.js": "^1.10.2",
-    "Polymer": "^1.6.0"
+    "bower": "^1.7.9",
+    "Polymer": "^1.6.0",
+    "es6-promise": "^4.0.5",
+    "plotly.js": "^1.24.0"
   },
   "files": [
+    ".eslintrc.yaml",
+    "CONTRIBUTING.md",
+    "bower.json",
+    "demo",
     "index.html",
     "plotly-import.html",
+    "plotly-plot-behavior.html",
+    "plotly-plot-behavior.js",
     "plotly-plot.html",
-    "bower.json",
-    "wct.conf.json",
-    "CONTRIBUTING.md",
-    "demo",
-    "test"
+    "test",
+    "wct.conf.json"
   ],
   "devDependencies": {
-    "bower": "^1.7.9",
-    "polyserve": "^0.11.0",
+    "eslint": "^3.16.1",
+    "eslint-config-airbnb-base": "^11.1.0",
+    "eslint-plugin-chai-expect": "^1.1.1",
+    "eslint-plugin-chai-friendly": "^0.2.0",
+    "eslint-plugin-import": "^2.2.0",
     "polylint": "^2.10.1",
+    "polyserve": "^0.11.0",
     "web-component-tester": "^4.0.0"
   },
   "peerDependencies": {
@@ -46,6 +55,12 @@
   },
   "scripts": {
     "start": "polyserve",
-    "test": "wct"
+    "test": "wct",
+    "bower": "bower",
+    "bower:install": "bower install",
+    "bower:update": "bower update",
+    "eslint": "eslint . && echo OK",
+    "polylint": "polylint && echo OK",
+    "lint": "npm run eslint && npm run polylint"
   }
 }

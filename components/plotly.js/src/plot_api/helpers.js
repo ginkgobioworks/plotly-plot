@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -298,7 +298,7 @@ exports.cleanData = function(data, existingData) {
             trace.scene = Plots.subplotsRegistry.gl3d.cleanId(trace.scene);
         }
 
-        if(!Registry.traceIs(trace, 'pie')) {
+        if(!Registry.traceIs(trace, 'pie') && !Registry.traceIs(trace, 'bar')) {
             if(Array.isArray(trace.textposition)) {
                 trace.textposition = trace.textposition.map(cleanTextPosition);
             }
@@ -352,6 +352,13 @@ exports.cleanData = function(data, existingData) {
                     if(transform.filtersrc) {
                         transform.target = transform.filtersrc;
                         delete transform.filtersrc;
+                    }
+
+                    if(transform.calendar) {
+                        if(!transform.valuecalendar) {
+                            transform.valuecalendar = transform.calendar;
+                        }
+                        delete transform.calendar;
                     }
                 }
             }
@@ -432,7 +439,7 @@ exports.coerceTraceIndices = function(gd, traceIndices) {
 
 /**
  * Manages logic around array container item creation / deletion / update
- * that nested property along can't handle.
+ * that nested property alone can't handle.
  *
  * @param {Object} np
  *  nested property of update attribute string about trace or layout object
@@ -476,4 +483,37 @@ exports.manageArrayContainers = function(np, newVal, undoit) {
         // np.set is all we need.
         np.set(newVal);
     }
+};
+
+/*
+ * Match the part to strip off to turn an attribute into its parent
+ * really it should be either '.some_characters' or '[number]'
+ * but we're a little more permissive here and match either
+ * '.not_brackets_or_dot' or '[not_brackets_or_dot]'
+ */
+var ATTR_TAIL_RE = /(\.[^\[\]\.]+|\[[^\[\]\.]+\])$/;
+
+function getParent(attr) {
+    var tail = attr.search(ATTR_TAIL_RE);
+    if(tail > 0) return attr.substr(0, tail);
+}
+
+/*
+ * hasParent: does an attribute object contain a parent of the given attribute?
+ * for example, given 'images[2].x' do we also have 'images' or 'images[2]'?
+ *
+ * @param {Object} aobj
+ *  update object, whose keys are attribute strings and values are their new settings
+ * @param {string} attr
+ *  the attribute string to test against
+ * @returns {Boolean}
+ *  is a parent of attr present in aobj?
+ */
+exports.hasParent = function(aobj, attr) {
+    var attrParent = getParent(attr);
+    while(attrParent) {
+        if(attrParent in aobj) return true;
+        attrParent = getParent(attrParent);
+    }
+    return false;
 };

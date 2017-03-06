@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -104,7 +104,18 @@ exports.getFilterFn = function(direction) {
     }
 };
 
-exports.addRangeSlider = function(layout) {
-    if(!layout.xaxis) layout.xaxis = {};
-    if(!layout.xaxis.rangeslider) layout.xaxis.rangeslider = {};
+exports.addRangeSlider = function(data, layout) {
+    var hasOneVisibleTrace = false;
+
+    for(var i = 0; i < data.length; i++) {
+        if(data[i].visible === true) {
+            hasOneVisibleTrace = true;
+            break;
+        }
+    }
+
+    if(hasOneVisibleTrace) {
+        if(!layout.xaxis) layout.xaxis = {};
+        if(!layout.xaxis.rangeslider) layout.xaxis.rangeslider = {};
+    }
 };

@@ -27,18 +27,19 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.2.0",
-    "plotly.js": "^1.14.2"
+    "polymer": "Polymer/polymer#^1.6.0",
+    "plotly.js": "^1.24.0",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.5"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "web-component-tester": "^4.0.0"
   },
-  "_release": "dc642dc27f",
+  "_release": "4f44708d8a",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "dc642dc27f4e4e9b22137578cdba8a84c3b4465c"
+    "commit": "4f44708d8a4f07854ea038ba768839b20bed156b"
   },
   "_source": "https://github.com/ginkgobioworks/plotly-plot.git",
   "_target": "master",

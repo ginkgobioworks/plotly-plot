@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -38,7 +38,9 @@ exports.calcTraceToLineCoords = function(calcTrace) {
         }
     }
 
-    coords.push(lineString);
+    if(lineString.length > 0) {
+        coords.push(lineString);
+    }
 
     return coords;
 };

@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -298,16 +298,18 @@ module.exports = function dragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     function zoomAxRanges(axList, r0Fraction, r1Fraction) {
         var i,
             axi,
-            axRangeLinear;
+            axRangeLinear0,
+            axRangeLinearSpan;
 
         for(i = 0; i < axList.length; i++) {
             axi = axList[i];
             if(axi.fixedrange) continue;
 
-            axRangeLinear = axi.range.map(axi.r2l);
+            axRangeLinear0 = axi._rl[0];
+            axRangeLinearSpan = axi._rl[1] - axRangeLinear0;
             axi.range = [
-                axi.l2r(axRangeLinear[0] + (axRangeLinear[1] - axRangeLinear[0]) * r0Fraction),
-                axi.l2r(axRangeLinear[0] + (axRangeLinear[1] - axRangeLinear[0]) * r1Fraction)
+                axi.l2r(axRangeLinear0 + axRangeLinearSpan * r0Fraction),
+                axi.l2r(axRangeLinear0 + axRangeLinearSpan * r1Fraction)
             ];
         }
     }
@@ -351,21 +353,23 @@ module.exports = function dragBox(gd, plotinfo, x, y, w, h, ns, ew) {
             }
             else if(ew === 'e') hAlign = 'right';
 
-            dragger3
-                .call(svgTextUtils.makeEditable, null, {
-                    immediate: true,
-                    background: fullLayout.paper_bgcolor,
-                    text: String(initialText),
-                    fill: ax.tickfont ? ax.tickfont.color : '#444',
-                    horizontalAlign: hAlign,
-                    verticalAlign: vAlign
-                })
-                .on('edit', function(text) {
-                    var v = ax.d2r(text);
-                    if(v !== undefined) {
-                        Plotly.relayout(gd, attrStr, v);
-                    }
-                });
+            if(gd._context.showAxisRangeEntryBoxes) {
+                dragger3
+                    .call(svgTextUtils.makeEditable, null, {
+                        immediate: true,
+                        background: fullLayout.paper_bgcolor,
+                        text: String(initialText),
+                        fill: ax.tickfont ? ax.tickfont.color : '#444',
+                        horizontalAlign: hAlign,
+                        verticalAlign: vAlign
+                    })
+                    .on('edit', function(text) {
+                        var v = ax.d2r(text);
+                        if(v !== undefined) {
+                            Plotly.relayout(gd, attrStr, v);
+                        }
+                    });
+            }
         }
     }
 
@@ -422,7 +426,7 @@ module.exports = function dragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         function zoomWheelOneAxis(ax, centerFraction, zoom) {
             if(ax.fixedrange) return;
 
-            var axRange = ax.range.map(ax.r2l),
+            var axRange = Lib.simpleMap(ax.range, ax.r2l),
                 v0 = axRange[0] + (axRange[1] - axRange[0]) * centerFraction;
             function doZoom(v) { return ax.l2r(v0 + (v - v0) * zoom); }
             ax.range = axRange.map(doZoom);
@@ -700,18 +704,18 @@ module.exports = function dragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 plotDy = ya2._offset - fracDy;
 
             fullLayout._defs.selectAll('#' + subplot.clipId)
-                .call(Lib.setTranslate, clipDx, clipDy)
-                .call(Lib.setScale, 1 / xScaleFactor, 1 / yScaleFactor);
+                .call(Drawing.setTranslate, clipDx, clipDy)
+                .call(Drawing.setScale, 1 / xScaleFactor, 1 / yScaleFactor);
 
             subplot.plot
-                .call(Lib.setTranslate, plotDx, plotDy)
-                .call(Lib.setScale, xScaleFactor, yScaleFactor)
+                .call(Drawing.setTranslate, plotDx, plotDy)
+                .call(Drawing.setScale, xScaleFactor, yScaleFactor)
 
                 // This is specifically directed at scatter traces, applying an inverse
                 // scale to individual points to counteract the scale of the trace
                 // as a whole:
-                .selectAll('.points').selectAll('.point')
-                    .call(Lib.setPointGroupScale, 1 / xScaleFactor, 1 / yScaleFactor);
+                .select('.scatterlayer').selectAll('.points').selectAll('.point')
+                    .call(Drawing.setPointGroupScale, 1 / xScaleFactor, 1 / yScaleFactor);
         }
     }
 

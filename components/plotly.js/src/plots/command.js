@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -156,6 +156,8 @@ exports.hasSimpleAPICommandBindings = function(gd, commandList, bindingsByValue)
         var method = command.method;
         var args = command.args;
 
+        if(!Array.isArray(args)) args = [];
+
         // If any command has no method, refuse to bind:
         if(!method) {
             return false;
@@ -263,6 +265,9 @@ exports.executeAPICommand = function(gd, method, args) {
     var apiMethod = Plotly[method];
 
     var allArgs = [gd];
+
+    if(!Array.isArray(args)) args = [];
+
     for(var i = 0; i < args.length; i++) {
         allArgs.push(args[i]);
     }
@@ -275,6 +280,9 @@ exports.executeAPICommand = function(gd, method, args) {
 
 exports.computeAPICommandBindings = function(gd, method, args) {
     var bindings;
+
+    if(!Array.isArray(args)) args = [];
+
     switch(method) {
         case 'restyle':
             bindings = computeDataBindings(gd, args);
@@ -301,8 +309,8 @@ exports.computeAPICommandBindings = function(gd, method, args) {
 function computeAnimateBindings(gd, args) {
     // We'll assume that the only relevant modification an animation
     // makes that's meaningfully tracked is the frame:
-    if(Array.isArray(args[0]) && args[0].length === 1 && typeof args[0][0] === 'string') {
-        return [{type: 'layout', prop: '_currentFrame', value: args[0][0]}];
+    if(Array.isArray(args[0]) && args[0].length === 1 && ['string', 'number'].indexOf(typeof args[0][0]) !== -1) {
+        return [{type: 'layout', prop: '_currentFrame', value: args[0][0].toString()}];
     } else {
         return [];
     }

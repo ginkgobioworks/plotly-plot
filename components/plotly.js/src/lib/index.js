@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -16,6 +16,9 @@ var lib = module.exports = {};
 lib.nestedProperty = require('./nested_property');
 lib.isPlainObject = require('./is_plain_object');
 lib.isArray = require('./is_array');
+lib.mod = require('./mod');
+lib.toLogRange = require('./to_log_range');
+lib.relinkPrivateKeys = require('./relink_private');
 
 var coerceModule = require('./coerce');
 lib.valObjects = coerceModule.valObjects;
@@ -28,8 +31,14 @@ var datesModule = require('./dates');
 lib.dateTime2ms = datesModule.dateTime2ms;
 lib.isDateTime = datesModule.isDateTime;
 lib.ms2DateTime = datesModule.ms2DateTime;
+lib.ms2DateTimeLocal = datesModule.ms2DateTimeLocal;
 lib.cleanDate = datesModule.cleanDate;
 lib.isJSDate = datesModule.isJSDate;
+lib.formatDate = datesModule.formatDate;
+lib.incrementMonth = datesModule.incrementMonth;
+lib.dateTick0 = datesModule.dateTick0;
+lib.dfltRange = datesModule.dfltRange;
+lib.findExactDates = datesModule.findExactDates;
 lib.MIN_MS = datesModule.MIN_MS;
 lib.MAX_MS = datesModule.MAX_MS;
 
@@ -73,9 +82,12 @@ lib.notifier = require('./notifier');
 
 lib.filterUnique = require('./filter_unique');
 lib.filterVisible = require('./filter_visible');
-
+lib.pushUnique = require('./push_unique');
 
 lib.cleanNumber = require('./clean_number');
+
+lib.noop = require('./noop');
+lib.identity = require('./identity');
 
 /**
  * swap x and y of the same attribute in container cont
@@ -128,11 +140,21 @@ lib.bBoxIntersect = function(a, b, pad) {
             b.top <= a.bottom + pad);
 };
 
-// minor convenience/performance booster for d3...
-lib.identity = function(d) { return d; };
-
-// minor convenience helper
-lib.noop = function() {};
+/*
+ * simpleMap: alternative to Array.map that only
+ * passes on the element and up to 2 extra args you
+ * provide (but not the array index or the whole array)
+ *
+ * array: the array to map it to
+ * func: the function to apply
+ * x1, x2: optional extra args
+ */
+lib.simpleMap = function(array, func, x1, x2) {
+    var len = array.length,
+        out = new Array(len);
+    for(var i = 0; i < len; i++) out[i] = func(array[i], x1, x2);
+    return out;
+};
 
 // random string generator
 lib.randstr = function randstr(existing, bits, base) {
@@ -314,23 +336,6 @@ lib.noneOrAll = function(containerIn, containerOut, attrList) {
     }
 };
 
-/**
- * Push array with unique items
- *
- * @param {array} array
- *  array to be filled
- * @param {any} item
- *  item to be or not to be inserted
- * @return {array}
- *  ref to array (now possibly containing one more item)
- *
- */
-lib.pushUnique = function(array, item) {
-    if(item && array.indexOf(item) === -1) array.push(item);
-
-    return array;
-};
-
 lib.mergeArray = function(traceAttr, cd, cdAttr) {
     if(Array.isArray(traceAttr)) {
         var imax = Math.min(traceAttr.length, cd.length);
@@ -428,109 +433,16 @@ lib.addStyleRule = function(selector, styleString) {
     else lib.warn('addStyleRule failed');
 };
 
-lib.getTranslate = function(element) {
-
-    var re = /.*\btranslate\((\d*\.?\d*)[^\d]*(\d*\.?\d*)[^\d].*/,
-        getter = element.attr ? 'attr' : 'getAttribute',
-        transform = element[getter]('transform') || '';
-
-    var translate = transform.replace(re, function(match, p1, p2) {
-        return [p1, p2].join(' ');
-    })
-    .split(' ');
-
-    return {
-        x: +translate[0] || 0,
-        y: +translate[1] || 0
-    };
-};
-
-lib.setTranslate = function(element, x, y) {
-
-    var re = /(\btranslate\(.*?\);?)/,
-        getter = element.attr ? 'attr' : 'getAttribute',
-        setter = element.attr ? 'attr' : 'setAttribute',
-        transform = element[getter]('transform') || '';
-
-    x = x || 0;
-    y = y || 0;
-
-    transform = transform.replace(re, '').trim();
-    transform += ' translate(' + x + ', ' + y + ')';
-    transform = transform.trim();
-
-    element[setter]('transform', transform);
-
-    return transform;
-};
-
-lib.getScale = function(element) {
-
-    var re = /.*\bscale\((\d*\.?\d*)[^\d]*(\d*\.?\d*)[^\d].*/,
-        getter = element.attr ? 'attr' : 'getAttribute',
-        transform = element[getter]('transform') || '';
-
-    var translate = transform.replace(re, function(match, p1, p2) {
-        return [p1, p2].join(' ');
-    })
-    .split(' ');
-
-    return {
-        x: +translate[0] || 1,
-        y: +translate[1] || 1
-    };
-};
-
-lib.setScale = function(element, x, y) {
-
-    var re = /(\bscale\(.*?\);?)/,
-        getter = element.attr ? 'attr' : 'getAttribute',
-        setter = element.attr ? 'attr' : 'setAttribute',
-        transform = element[getter]('transform') || '';
-
-    x = x || 1;
-    y = y || 1;
-
-    transform = transform.replace(re, '').trim();
-    transform += ' scale(' + x + ', ' + y + ')';
-    transform = transform.trim();
-
-    element[setter]('transform', transform);
-
-    return transform;
-};
-
-lib.setPointGroupScale = function(selection, x, y) {
-    var t, scale, re;
-
-    x = x || 1;
-    y = y || 1;
-
-    if(x === 1 && y === 1) {
-        scale = '';
-    } else {
-        // The same scale transform for every point:
-        scale = ' scale(' + x + ',' + y + ')';
-    }
-
-    // A regex to strip any existing scale:
-    re = /\s*sc.*/;
-
-    selection.each(function() {
-        // Get the transform:
-        t = (this.getAttribute('transform') || '').replace(re, '');
-        t += scale;
-        t = t.trim();
-
-        // Append the scale transform
-        this.setAttribute('transform', t);
-    });
-
-    return scale;
-};
-
 lib.isIE = function() {
     return typeof window.navigator.msSaveBlob !== 'undefined';
+};
+
+/**
+ * Duck typing to recognize a d3 selection, mostly for IE9's benefit
+ * because it doesn't handle instanceof like modern browsers
+ */
+lib.isD3Selection = function(obj) {
+    return obj && (typeof obj.classed === 'function');
 };
 
 

@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -51,7 +51,7 @@ function countryNameToISO3(countryName) {
         var iso3 = countryIds[i],
             regex = new RegExp(countryRegex[iso3]);
 
-        if(regex.test(countryName.toLowerCase())) return iso3;
+        if(regex.test(countryName.trim().toLowerCase())) return iso3;
     }
 
     Lib.warn('Unrecognized country name: ' + countryName + '.');

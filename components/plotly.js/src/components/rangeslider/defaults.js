@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -11,8 +11,7 @@
 var Lib = require('../../lib');
 var attributes = require('./attributes');
 
-
-module.exports = function handleDefaults(layoutIn, layoutOut, axName, counterAxes) {
+module.exports = function handleDefaults(layoutIn, layoutOut, axName) {
     if(!layoutIn[axName].rangeslider) return;
 
     // not super proud of this (maybe store _ in axis object instead
@@ -28,33 +27,28 @@ module.exports = function handleDefaults(layoutIn, layoutOut, axName, counterAxe
         return Lib.coerce(containerIn, containerOut, attributes, attr, dflt);
     }
 
+    var visible = coerce('visible');
+    if(!visible) return;
+
     coerce('bgcolor', layoutOut.plot_bgcolor);
     coerce('bordercolor');
     coerce('borderwidth');
     coerce('thickness');
-    coerce('visible');
+
+    coerce('autorange', !axOut.isValidRange(containerIn.range));
     coerce('range');
 
     // Expand slider range to the axis range
-    if(containerOut.range && !axOut.autorange) {
+    // TODO: what if the ranges are reversed?
+    if(containerOut.range) {
         var outRange = containerOut.range,
-            axRange = axOut.range,
-            l2r = axOut.l2r,
-            r2l = axOut.r2l;
+            axRange = axOut.range;
 
-        outRange[0] = l2r(Math.min(r2l(outRange[0]), r2l(axRange[0])));
-        outRange[1] = l2r(Math.max(r2l(outRange[1]), r2l(axRange[1])));
-    } else {
-        axOut._needsExpand = true;
+        outRange[0] = axOut.l2r(Math.min(axOut.r2l(outRange[0]), axOut.r2l(axRange[0])));
+        outRange[1] = axOut.l2r(Math.max(axOut.r2l(outRange[1]), axOut.r2l(axRange[1])));
     }
 
-    if(containerOut.visible) {
-        counterAxes.forEach(function(ax) {
-            var opposing = layoutOut[ax] || {};
-            opposing.fixedrange = true;
-            layoutOut[ax] = opposing;
-        });
-    }
+    axOut.cleanRange('rangeslider.range');
 
     // to map back range slider (auto) range
     containerOut._input = containerIn;

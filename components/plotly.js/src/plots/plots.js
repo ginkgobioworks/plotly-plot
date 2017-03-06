@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -21,6 +21,8 @@ var plots = module.exports = {};
 
 var animationAttrs = require('./animation_attributes');
 var frameAttrs = require('./frame_attributes');
+
+var relinkPrivateKeys = Lib.relinkPrivateKeys;
 
 // Expose registry methods on Plots for backward-compatibility
 Lib.extendFlat(plots, Registry);
@@ -63,7 +65,7 @@ plots.hasSimpleAPICommandBindings = commandModule.hasSimpleAPICommandBindings;
 plots.findSubplotIds = function findSubplotIds(data, type) {
     var subplotIds = [];
 
-    if(plots.subplotsRegistry[type] === undefined) return subplotIds;
+    if(!plots.subplotsRegistry[type]) return subplotIds;
 
     var attr = plots.subplotsRegistry[type].attr;
 
@@ -90,7 +92,7 @@ plots.findSubplotIds = function findSubplotIds(data, type) {
 plots.getSubplotIds = function getSubplotIds(layout, type) {
     var _module = plots.subplotsRegistry[type];
 
-    if(_module === undefined) return [];
+    if(!_module) return [];
 
     // layout must be 'fullLayout' here
     if(type === 'cartesian' && (!layout._has || !layout._has('cartesian'))) return [];
@@ -124,14 +126,14 @@ plots.getSubplotIds = function getSubplotIds(layout, type) {
  * Get the data trace(s) associated with a given subplot.
  *
  * @param {array} data  plotly full data array.
- * @param {object} layout plotly full layout object.
- * @param {string} subplotId subplot ids to look for.
+ * @param {string} type subplot type to look for.
+ * @param {string} subplotId subplot id to look for.
  *
  * @return {array} list of trace objects.
  *
  */
 plots.getSubplotData = function getSubplotData(data, type, subplotId) {
-    if(plots.subplotsRegistry[type] === undefined) return [];
+    if(!plots.subplotsRegistry[type]) return [];
 
     var attr = plots.subplotsRegistry[type].attr,
         subplotData = [],
@@ -155,6 +157,31 @@ plots.getSubplotData = function getSubplotData(data, type, subplotId) {
     }
 
     return subplotData;
+};
+
+/**
+ * Get calcdata traces(s) associated with a given subplot
+ *
+ * @param {array} calcData (as in gd.calcdata)
+ * @param {string} type subplot type
+ * @param {string} subplotId subplot id to look for
+ *
+ * @return {array} array of calcdata traces
+ */
+plots.getSubplotCalcData = function(calcData, type, subplotId) {
+    if(!plots.subplotsRegistry[type]) return [];
+
+    var attr = plots.subplotsRegistry[type].attr;
+    var subplotCalcData = [];
+
+    for(var i = 0; i < calcData.length; i++) {
+        var calcTrace = calcData[i],
+            trace = calcTrace[0].trace;
+
+        if(trace[attr] === subplotId) subplotCalcData.push(calcTrace);
+    }
+
+    return subplotCalcData;
 };
 
 // in some cases the browser doesn't seem to know how big
@@ -567,51 +594,6 @@ plots.cleanPlot = function(newFullData, newFullLayout, oldFullData, oldFullLayou
     }
 };
 
-/**
- * Relink private _keys and keys with a function value from one container
- * to the new container.
- * Relink means copying if object is pass-by-value and adding a reference
- * if object is pass-by-ref.
- * This prevents deepCopying massive structures like a webgl context.
- */
-function relinkPrivateKeys(toContainer, fromContainer) {
-    var isPlainObject = Lib.isPlainObject,
-        isArray = Array.isArray;
-
-    var keys = Object.keys(fromContainer || {});
-
-    for(var i = 0; i < keys.length; i++) {
-        var k = keys[i],
-            fromVal = fromContainer[k],
-            toVal = toContainer[k];
-
-        if(k.charAt(0) === '_' || typeof fromVal === 'function') {
-
-            // if it already exists at this point, it's something
-            // that we recreate each time around, so ignore it
-            if(k in toContainer) continue;
-
-            toContainer[k] = fromVal;
-        }
-        else if(isArray(fromVal) && isArray(toVal) && isPlainObject(fromVal[0])) {
-
-            // recurse into arrays containers
-            for(var j = 0; j < fromVal.length; j++) {
-                if(isPlainObject(fromVal[j]) && isPlainObject(toVal[j])) {
-                    relinkPrivateKeys(toVal[j], fromVal[j]);
-                }
-            }
-        }
-        else if(isPlainObject(fromVal) && isPlainObject(toVal)) {
-
-            // recurse into objects, but only if they still exist
-            relinkPrivateKeys(toVal, fromVal);
-
-            if(!Object.keys(toVal).length) delete toContainer[k];
-        }
-    }
-}
-
 plots.linkSubplots = function(newFullData, newFullLayout, oldFullData, oldFullLayout) {
     var oldSubplots = oldFullLayout._plots || {},
         newSubplots = newFullLayout._plots = {};
@@ -630,6 +612,10 @@ plots.linkSubplots = function(newFullData, newFullLayout, oldFullData, oldFullLa
 
         if(oldSubplot) {
             plotinfo = newSubplots[id] = oldSubplot;
+
+            if(plotinfo._scene2d) {
+                plotinfo._scene2d.updateRefs(newFullLayout);
+            }
         }
         else {
             plotinfo = newSubplots[id] = {};
@@ -941,6 +927,9 @@ plots.supplyLayoutGlobalDefaults = function(layoutIn, layoutOut) {
     coerce('separators');
     coerce('hidesources');
     coerce('smith');
+
+    var handleCalendarDefaults = Registry.getComponentMethod('calendars', 'handleDefaults');
+    handleCalendarDefaults(layoutIn, layoutOut, 'calendar');
 };
 
 plots.plotAutoSize = function plotAutoSize(gd, layout, fullLayout) {
@@ -1191,7 +1180,7 @@ plots.sanitizeMargins = function(fullLayout) {
     }
 };
 
-// called by legend and colorbar routines to see if we need to
+// called by components to see if we need to
 // expand the margins to show them
 // o is {x,l,r,y,t,b} where x and y are plot fractions,
 // the rest are pixels in each direction
@@ -1231,7 +1220,7 @@ plots.doAutoMargin = function(gd) {
     var gs = fullLayout._size,
         oldmargins = JSON.stringify(gs);
 
-    // adjust margins for outside legends and colorbars
+    // adjust margins for outside components
     // fullLayout.margin is the requested margin,
     // fullLayout._size has margins and plotsize after adjustment
     var ml = Math.max(fullLayout.margin.l || 0, 0),
@@ -1241,6 +1230,7 @@ plots.doAutoMargin = function(gd) {
         pm = fullLayout._pushmargin;
 
     if(fullLayout.margin.autoexpand !== false) {
+
         // fill in the requested margins
         pm.base = {
             l: {val: 0, size: ml},
@@ -1248,19 +1238,29 @@ plots.doAutoMargin = function(gd) {
             t: {val: 1, size: mt},
             b: {val: 0, size: mb}
         };
+
         // now cycle through all the combinations of l and r
         // (and t and b) to find the required margins
-        Object.keys(pm).forEach(function(k1) {
+
+        var pmKeys = Object.keys(pm);
+
+        for(var i = 0; i < pmKeys.length; i++) {
+            var k1 = pmKeys[i];
+
             var pushleft = pm[k1].l || {},
                 pushbottom = pm[k1].b || {},
                 fl = pushleft.val,
                 pl = pushleft.size,
                 fb = pushbottom.val,
                 pb = pushbottom.size;
-            Object.keys(pm).forEach(function(k2) {
+
+            for(var j = 0; j < pmKeys.length; j++) {
+                var k2 = pmKeys[j];
+
                 if(isNumeric(pl) && pm[k2].r) {
                     var fr = pm[k2].r.val,
                         pr = pm[k2].r.size;
+
                     if(fr > fl) {
                         var newl = (pl * fr +
                                 (pr - fullLayout.width) * fl) / (fr - fl),
@@ -1272,9 +1272,11 @@ plots.doAutoMargin = function(gd) {
                         }
                     }
                 }
+
                 if(isNumeric(pb) && pm[k2].t) {
                     var ft = pm[k2].t.val,
                         pt = pm[k2].t.size;
+
                     if(ft > fb) {
                         var newb = (pb * ft +
                                 (pt - fullLayout.height) * fb) / (ft - fb),
@@ -1286,8 +1288,8 @@ plots.doAutoMargin = function(gd) {
                         }
                     }
                 }
-            });
-        });
+            }
+        }
     }
 
     gs.l = Math.round(ml);
@@ -1335,7 +1337,8 @@ plots.graphJson = function(gd, dataonly, mode, output, useDefaults) {
     }
 
     var data = (useDefaults) ? gd._fullData : gd.data,
-        layout = (useDefaults) ? gd._fullLayout : gd.layout;
+        layout = (useDefaults) ? gd._fullLayout : gd.layout,
+        frames = (gd._transitionData || {})._frames;
 
     function stripObj(d) {
         if(typeof d === 'function') {
@@ -1390,7 +1393,7 @@ plots.graphJson = function(gd, dataonly, mode, output, useDefaults) {
 
         // convert native dates to date strings...
         // mostly for external users exporting to plotly
-        if(Lib.isJSDate(d)) return Lib.ms2DateTime(+d);
+        if(Lib.isJSDate(d)) return Lib.ms2DateTimeLocal(+d);
 
         return d;
     }
@@ -1407,6 +1410,8 @@ plots.graphJson = function(gd, dataonly, mode, output, useDefaults) {
     if(!dataonly) { obj.layout = stripObj(layout); }
 
     if(gd.framework && gd.framework.isPolar) obj = gd.framework.getConfig();
+
+    if(frames) obj.frames = stripObj(frames);
 
     return (output === 'object') ? obj : JSON.stringify(obj);
 };
@@ -1478,7 +1483,17 @@ plots.computeFrame = function(gd, frameName) {
     var frameLookup = gd._transitionData._frameHash;
     var i, traceIndices, traceIndex, destIndex;
 
-    var framePtr = frameLookup[frameName];
+    // Null or undefined will fail on .toString(). We'll allow numbers since we
+    // make it clear frames must be given string names, but we'll allow numbers
+    // here since they're otherwise fine for looking up frames as long as they're
+    // properly cast to strings. We really just want to ensure here that this
+    // 1) doesn't fail, and
+    // 2) doens't give an incorrect answer (which String(frameName) would)
+    if(!frameName) {
+        throw new Error('computeFrame must be given a string frame name');
+    }
+
+    var framePtr = frameLookup[frameName.toString()];
 
     // Return false if the name is invalid:
     if(!framePtr) {
@@ -1489,7 +1504,7 @@ plots.computeFrame = function(gd, frameName) {
     var frameNameStack = [framePtr.name];
 
     // Follow frame pointers:
-    while((framePtr = frameLookup[framePtr.baseframe])) {
+    while(framePtr.baseframe && (framePtr = frameLookup[framePtr.baseframe.toString()])) {
         // Avoid infinite loops:
         if(frameNameStack.indexOf(framePtr.name) !== -1) break;
 
@@ -1544,6 +1559,23 @@ plots.computeFrame = function(gd, frameName) {
     }
 
     return result;
+};
+
+/*
+ * Recompute the lookup table that maps frame name -> frame object. addFrames/
+ * deleteFrames already manages this data one at a time, so the only time this
+ * is necessary is if you poke around manually in `gd._transitionData._frames`
+ * and create and haven't updated the lookup table.
+ */
+plots.recomputeFrameHash = function(gd) {
+    var hash = gd._transitionData._frameHash = {};
+    var frames = gd._transitionData._frames;
+    for(var i = 0; i < frames.length; i++) {
+        var frame = frames[i];
+        if(frame && frame.name) {
+            hash[frame.name] = frame;
+        }
+    }
 };
 
 /**
@@ -1872,7 +1904,7 @@ plots.transition = function(gd, data, layout, traces, frameOpts, transitionOpts)
         }
     }
 
-    var seq = [plots.previousPromises, interruptPreviousTransitions, prepareTransitions, executeTransitions];
+    var seq = [plots.previousPromises, interruptPreviousTransitions, prepareTransitions, plots.rehover, executeTransitions];
 
     var transitionStarting = Lib.syncOrAsync(seq, gd);
 
@@ -1888,8 +1920,11 @@ plots.transition = function(gd, data, layout, traces, frameOpts, transitionOpts)
 plots.doCalcdata = function(gd, traces) {
     var axList = Plotly.Axes.list(gd),
         fullData = gd._fullData,
-        fullLayout = gd._fullLayout,
-        i, j;
+        fullLayout = gd._fullLayout;
+
+    var trace, _module, i, j;
+
+    var hasCategoryAxis = false;
 
     // XXX: Is this correct? Needs a closer look so that *some* traces can be recomputed without
     // *all* needing doCalcdata:
@@ -1916,48 +1951,60 @@ plots.doCalcdata = function(gd, traces) {
     // to be filled in later by ax.d2c
     for(i = 0; i < axList.length; i++) {
         axList[i]._categories = axList[i]._initialCategories.slice();
+        if(axList[i].type === 'category') hasCategoryAxis = true;
     }
 
+    // If traces were specified and this trace was not included,
+    // then transfer it over from the old calcdata:
     for(i = 0; i < fullData.length; i++) {
-        // If traces were specified and this trace was not included, then transfer it over from
-        // the old calcdata:
         if(Array.isArray(traces) && traces.indexOf(i) === -1) {
             calcdata[i] = oldCalcdata[i];
             continue;
         }
+    }
 
-        var trace = fullData[i],
-            cd = [];
+    var hasCalcTransform = false;
 
-        // If traces were specified and this trace was not included, then transfer it over from
-        // the old calcdata:
-        if(Array.isArray(traces) && traces.indexOf(i) === -1) {
-            calcdata[i] = oldCalcdata[i];
-            continue;
-        }
+    // transform loop
+    for(i = 0; i < fullData.length; i++) {
+        trace = fullData[i];
 
-        var _module;
-        if(trace.visible === true) {
+        if(trace.visible === true && trace.transforms) {
+            _module = trace._module;
 
-            // call calcTransform method if any
-            if(trace.transforms) {
+            // we need one round of trace module calc before
+            // the calc transform to 'fill in' the categories list
+            // used for example in the data-to-coordinate method
+            if(_module && _module.calc) _module.calc(gd, trace);
 
-                // we need one round of trace module calc before
-                // the calc transform to 'fill in' the categories list
-                // used for example in the data-to-coordinate method
-                _module = trace._module;
-                if(_module && _module.calc) _module.calc(gd, trace);
+            for(j = 0; j < trace.transforms.length; j++) {
+                var transform = trace.transforms[j];
 
-                for(j = 0; j < trace.transforms.length; j++) {
-                    var transform = trace.transforms[j];
-
-                    _module = transformsRegistry[transform.type];
-                    if(_module && _module.calcTransform) {
-                        _module.calcTransform(gd, trace, transform);
-                    }
+                _module = transformsRegistry[transform.type];
+                if(_module && _module.calcTransform) {
+                    hasCalcTransform = true;
+                    _module.calcTransform(gd, trace, transform);
                 }
             }
+        }
+    }
 
+    // clear stuff that should recomputed in 'regular' loop
+    if(hasCalcTransform) {
+        for(i = 0; i < axList.length; i++) {
+            axList[i]._min = [];
+            axList[i]._max = [];
+            axList[i]._categories = [];
+        }
+    }
+
+    // 'regular' loop
+    for(i = 0; i < fullData.length; i++) {
+        var cd = [];
+
+        trace = fullData[i];
+
+        if(trace.visible === true) {
             _module = trace._module;
             if(_module && _module.calc) cd = _module.calc(gd, trace);
         }
@@ -1981,4 +2028,86 @@ plots.doCalcdata = function(gd, traces) {
 
         calcdata[i] = cd;
     }
+
+    // To handle the case of components using category names as coordinates, we
+    // need to re-supply defaults for these objects now, after calc has
+    // finished populating the category mappings
+    // Any component that uses `Axes.coercePosition` falls into this category
+    if(hasCategoryAxis) {
+        var dataReferencedComponents = ['annotations', 'shapes', 'images'];
+        for(i = 0; i < dataReferencedComponents.length; i++) {
+            Registry.getComponentMethod(dataReferencedComponents[i], 'supplyLayoutDefaults')(
+                gd.layout, fullLayout, fullData);
+        }
+    }
+};
+
+plots.rehover = function(gd) {
+    if(gd._fullLayout._rehover) {
+        gd._fullLayout._rehover();
+    }
+};
+
+plots.generalUpdatePerTraceModule = function(subplot, subplotCalcData, subplotLayout) {
+    var traceHashOld = subplot.traceHash,
+        traceHash = {},
+        i;
+
+    function filterVisible(calcDataIn) {
+        var calcDataOut = [];
+
+        for(var i = 0; i < calcDataIn.length; i++) {
+            var calcTrace = calcDataIn[i],
+                trace = calcTrace[0].trace;
+
+            if(trace.visible === true) calcDataOut.push(calcTrace);
+        }
+
+        return calcDataOut;
+    }
+
+    // build up moduleName -> calcData hash
+    for(i = 0; i < subplotCalcData.length; i++) {
+        var calcTraces = subplotCalcData[i],
+            trace = calcTraces[0].trace;
+
+        // skip over visible === false traces
+        // as they don't have `_module` ref
+        if(trace.visible) {
+            traceHash[trace.type] = traceHash[trace.type] || [];
+            traceHash[trace.type].push(calcTraces);
+        }
+    }
+
+    var moduleNamesOld = Object.keys(traceHashOld);
+    var moduleNames = Object.keys(traceHash);
+
+    // when a trace gets deleted, make sure that its module's
+    // plot method is called so that it is properly
+    // removed from the DOM.
+    for(i = 0; i < moduleNamesOld.length; i++) {
+        var moduleName = moduleNamesOld[i];
+
+        if(moduleNames.indexOf(moduleName) === -1) {
+            var fakeCalcTrace = traceHashOld[moduleName][0],
+                fakeTrace = fakeCalcTrace[0].trace;
+
+            fakeTrace.visible = false;
+            traceHash[moduleName] = [fakeCalcTrace];
+        }
+    }
+
+    // update list of module names to include 'fake' traces added above
+    moduleNames = Object.keys(traceHash);
+
+    // call module plot method
+    for(i = 0; i < moduleNames.length; i++) {
+        var moduleCalcData = traceHash[moduleNames[i]],
+            _module = moduleCalcData[0][0].trace._module;
+
+        _module.plot(subplot, filterVisible(moduleCalcData), subplotLayout);
+    }
+
+    // update moduleName -> calcData hash
+    subplot.traceHash = traceHash;
 };

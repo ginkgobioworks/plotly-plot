@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -178,7 +178,7 @@ module.exports = {
         role: 'style',
         dflt: true,
         description: [
-            'Determines whether or not the sectors of reordered',
+            'Determines whether or not the sectors are reordered',
             'from largest to smallest.'
         ].join(' ')
     },

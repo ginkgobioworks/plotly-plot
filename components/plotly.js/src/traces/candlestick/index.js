@@ -1,5 +1,5 @@
 /**
-* Copyright 2012-2016, Plotly, Inc.
+* Copyright 2012-2017, Plotly, Inc.
 * All rights reserved.
 *
 * This source code is licensed under the MIT license found in the
@@ -15,7 +15,7 @@ module.exports = {
     moduleType: 'trace',
     name: 'candlestick',
     basePlotModule: require('../../plots/cartesian'),
-    categories: ['cartesian', 'showLegend'],
+    categories: ['cartesian', 'showLegend', 'candlestick'],
     meta: {
         description: [
             'The candlestick is a style of financial chart describing',
