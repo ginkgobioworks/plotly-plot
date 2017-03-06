@@ -15,7 +15,8 @@
 # Run in a clean directory passing in a GitHub org and repo name:
 # gp-build foo barproj me me@foo.com master
 
-BOWER=$PWD/node_modules/.bin/bower
+BOWER=${BOWER:-$PWD/node_modules/.bin/bower}
+prog=$(basename $0)
 
 org=$1
 repo=$2
@@ -26,51 +27,112 @@ gh_pages_branch=${6:-'gh-pages'} # default to master when branch isn't specified
 
 repo_url="https://${GH_TOKEN}@github.com/$org/$repo.git"
 
+usage() {
+  cat <<-EOH
+	$prog - Publish the element info to gh pages in a CI environment
+
+	Usage:
+	$prog [-h|--help] <org> <repo> <name> <email> [branch] [gh_pages_branch]
+
+	Exampe:
+	  # yourcompany/therepo deploy
+	  gp-build yourcompany therepo 'Your Name' you@yourcompany.com
+
+	Environment:
+	  You must set \$GH_TOKEN in the environment to the the OAuth token of the
+	  user doing the update.
+EOH
+	exit 1
+}
+
+if [ "$1" == '-h' ] || [ "$1" == '--help' ]; then
+	usage
+elif [ -z "$email" ]; then
+  echo 'Required arguments not defined' > /dev/stderr
+	echo
+  usage
+elif [ -z "${GH_TOKEN}" ]; then
+  echo 'GH_TOKEN environment variable must be defined' > /dev/stderr
+	echo
+  usage
+fi
+
+
+## Set up the repo directory
+
 tmpdir=`mktemp -d`
 cd $tmpdir
 
 # make folder (same as input, no checking!)
-mkdir -p $repo
-git clone $repo_url --single-branch
+repodir=$org-$repo
+mkdir -p $repodir
+git clone $repo_url $repodir
 
 # switch to gh-pages branch
-pushd $repo >/dev/null
-git checkout --orphan gh-pages
+pushd $repodir
+git checkout gh-pages
 
 # remove all content
 git rm -rf -q .
 
-# use bower to install runtime deployment
-$BOWER cache clean $repo # ensure we're getting the latest from the desired branch.
+
+## Use Bower to install runtime deployment
+
+# ensure we're getting the latest from the desired branch.
+$BOWER cache clean $repo
+
+# copy the desired branch's bower.json to get what to install
 git show ${branch}:bower.json > bower.json
-echo '{
+
+# make the installation happen in the `components` folder
+cat > .bowerrc << EOF
+{
   "directory": "components"
 }
-' > .bowerrc
+EOF
+
+# install the deps & repo itself at the same level in components
 $BOWER install
 $BOWER install $org/$repo#$branch
+
+# update the demo code from the current source
 git checkout ${branch} -- demo
 rm -rf components/$repo/demo
 mv demo components/$repo/
 
-# redirect by default to the component folder
-echo "<META http-equiv=\"refresh\" content=\"0;URL=components/$repo/\">" > index.html
+# write index to html-redirect by default to the component folder
+cat >index.html <<EOF
+<!doctype html>
+<html>
+<head><meta http-equiv="refresh" content="0;URL=components/$repo/"></head>
+<body></body>
+</html>
+EOF
 
+# set up the git user for pushing the changes
 git config user.name $name
 git config user.email $email
 
 # send it all to github
 git add -A .
-git commit -am 'Deploy to GitHub Pages'
-git push --force --quiet -u $repo_url $gh_pages_branch > /dev/null 2>&1
+git commit -am "Deploy branch '$branch' to GitHub Pages"
+git push --force -u $repo_url $gh_pages_branch
 
-popd >/dev/null
+popd
 
 # Original license
 #
 # Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
-# This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-# The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-# The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+#
+# This code may only be used under the BSD style license found at
+# http://polymer.github.io/LICENSE.txt
+#
+# The complete set of authors may be found at
+# http://polymer.github.io/AUTHORS.txt
+#
+# The complete set of contributors may be found at
+# http://polymer.github.io/CONTRIBUTORS.txt
+#
 # Code distributed by Google as part of the polymer project is also
-# subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+# subject to an additional IP rights grant found at
+# http://polymer.github.io/PATENTS.txt
