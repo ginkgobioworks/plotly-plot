@@ -32,6 +32,70 @@ Import the element into your project by using an HTML import:
 <link rel="import" href="../plotly-plot/plotly-plot.html">
 ```
 
+### Extending the functionality in your own elements
+
+There are two common ways to use `<plotly-plot>` to extend your own elements.
+
+#### Embedding
+The best way to customize plotly-plot functionality for your own specific
+components is to embed `<plotly-plot>` elements inside them. From there, your
+components can dicate their own APIs, which won't need to be as generic as the
+complete Plotly API provided by `plotly-plot`. For example, if you want to have
+an element that makes a pie chart, it might look like this:
+
+```html
+<dom-module id="my-pie-chart">
+  <template>
+    <plotly-plot id="pp"></plotly-plot>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-pie-chart',
+      properties: {
+        values: Array,
+        labels: Array,
+        title: String,
+      },
+      observers: [
+        'draw(values.*,labels.*,title)'
+      ],
+      draw: function () {
+        var data = [{ values: this.values, labels: this.labels, type: 'pie' }];
+        var layout = { title: this.title };
+        this.$.pp.update(data, layout);
+      },
+    });
+  </script>
+</dom-module>
+```
+
+#### Behavior
+However, If you want to write your own generic element that behaves like
+`plotly-plot`, exposing the same generic API but changing defaults or adding
+additional customization features, you can use the `PlotlyPlotBehavior`
+exposed in `plotly-plot-behavior.html`. Just make sure your local DOM contains
+an element that will contain the plot itself. By default, the behavior expects
+this tag to have the id `#plot`, but you can change that criterion by overriding
+the `getPlot()` method. It might look something like this:
+
+```html
+<dom-module id="my-plotly-plot">
+  <template>
+    <div id="plot" data=[[data]], config="[[config]]" layout="[[layout]]">
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-plotly-plot',
+      behaviors: [PlotlyPlot.PlotlyPlotBehavior],
+      // override and add methods here
+    });
+  </script>
+</dom-module>
+```
+
 ### NOTE: The plotly.js library is incompatible with shadow DOM
 
 Polymer elements, and web components in general, depend on being able to "hide"
@@ -64,27 +128,30 @@ project_.
 ### Installing Dependencies
 
 Element dependencies are managed via [Bower](http://bower.io/) for the
-front-end/polymer components, and NPM for everything else.
+front-end/Polymer components, and [NPM](https://www.npmjs.com) for everything
+else.
 
-Installing NPM dependencies
+Installing NPM dependencies:
 
 ```bash
-	$ npm install
+    $ npm install
 ```
+
 Installing / updating Bower dependencies:
 
 ```bash
     $ npm run bower:install
     $ npm run bower:update
 ```
+
 ### Linting
 
 #### Polylint
-[Polylint](https://github.com/PolymerLabs/polylint) can be used to take into
-account Polymer linting specificities.
+[Polylint](https://github.com/PolymerLabs/polylint) can be used to lint the
+HTML/JS to account for common Polymer gotchas
 
 ```bash
-	$ npm run polylint
+    $ npm run polylint
 ```
 
 Polylint [documentation](https://github.com/PolymerLabs/polylint#polylint).
@@ -93,55 +160,61 @@ Polylint [documentation](https://github.com/PolymerLabs/polylint#polylint).
 [ESLint](http://eslint.org/) is used to lint the JavaScript.
 
 ```bash
-	$ npm run eslint
+    $ npm run eslint
 ```
 
-Both can be run together:
+Both linters can be run together:
 
 ```bash
-	$ npm run lint
+    $ npm run lint
 ```
 
 ### Dev server
 
 [Polyserve](https://github.com/PolymerLabs/polyserve) makes it easy to use the
-element while keeping Bower dependencies in line. It works well as a development
-server.
-
-Installing Polyserve:
+element along with its Bower dependencies without having to move or copy files.
+It works well as a development server. Running Polyserve:
 
 ```bash
-	$ npm install -g polyserve
+    $ npm start
 ```
 
-Running Polyserve:
-
-```bash
-	$ npm start
-```
-
-Once running, `http://localhost:8080/components/plotly-plot/`, shows the
-index page of the element.
+Once running, `http://localhost:8080/components/plotly-plot/` shows the index
+page of the element.
 
 ### Testing
 
 Navigate to `http://localhost:8080/components/plotly-plot/test/` (as served
 by Polyserve) to run the tests.
 
-#### web-component-tester
-The tests are implemented with [web-component-tester](https://github.com/Polymer/web-component-tester).
-They can be run in a terminal:
+#### web-component-tester (WCT)
+The tests are implemented with
+[web-component-tester](https://github.com/Polymer/web-component-tester) (WCT).
+WCT comes with a script that lets you run the tests in a terminal using
+Selenium:
 
 ```bash
-	$ npm test
+    $ npm test
 ```
+
 #### WCT Tips
 - `npm test -- -l chrome` will only run tests in chrome.
 - `npm test -- -p` will keep the browsers alive after test runs (refresh to re-run).
 - `npm test -- test/some-file.html` will test only the files you specify.
+- `wct.conf.json` configures plugins and options for WCT
+- Running WCT inside a Docker container is tricky:
+   - Chrome must be run with `--no-sandbox`, or the container must have elevated
+     privileges
+   - Browsers must connect to a headless X server (Xvfb) to run.
+   - WCT does not really give you control over command line args to chrome, and
+     does not transfer all environmenet variables, so you have to write a
+     wrapper script that calls `xvfb-run chrome --no-sandbox "$@" ...`. You can
+     get WCT to use that script by setting the `LAUNCHPAD_CHROME` environment
+     variable to point to it.
 
-### Continuous Integration: TravisCI
+### Continuous Integration: Travis CI
 
 On every merge request in this repo, linting and tests will automatically be
-performed by travis-ci. Tagged versions are automatically released to NPM and
-Bower.
+performed by [Travis CI](https://travis-ci.org/ginkgobioworks/plotly-plot).
+Tagged versions in the `master` branch are automatically released to NPM and
+Bower, and automatically update the documentation on the element homepage.
