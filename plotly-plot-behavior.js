@@ -155,7 +155,7 @@
       self._onPlotlyClick = function (data) {
         return self.fire('plotly-click', {data: data});
       };
-
+      
       /**
        * Custom plotly-specific event for tracking hovers on the chart.
        * Fires before the hover happens.
@@ -189,6 +189,17 @@
         return self.fire('plotly-unhover', {data: data});
       };
 
+      /**
+       * Custom plotly-specific event for binding to zoom events.
+       * Fires after zoom.
+       *
+       * @event plotly_relayout
+       * @see the {@link https://plot.ly/javascript/zoom-events/}
+       */
+      self._onPlotlyRelayout = function (data) {
+        return self.fire('plotly_relayout', {data: data});
+      };
+
       return Plotly.newPlot(
         self.getPlot(), self.data, self.layout, self.config
       ).then(function (plotDiv) {
@@ -197,6 +208,7 @@
         plotDiv.on('plotly_beforehover', self._onPlotlyBeforehover);
         plotDiv.on('plotly_hover', self._onPlotlyHover);
         plotDiv.on('plotly_unhover', self._onPlotlyUnhover);
+        plotDiv.on('plotly_relayout', self._onPlotlyRelayout);
 
         return self;
       });
@@ -214,6 +226,7 @@
         this.getPlot().removeListener('plotly_beforehover', this._onPlotlyBeforehover);
         this.getPlot().removeListener('plotly_hover', this._onPlotlyHover);
         this.getPlot().removeListener('plotly_unhover', this._onPlotlyUnhover);
+        this.getPlot().removeListener('plotly_relayout', self._onPlotlyRelayout);
       }
 
       return;
