@@ -231,7 +231,7 @@
         this.getPlot().removeListener('plotly_beforehover', this._onPlotlyBeforehover);
         this.getPlot().removeListener('plotly_hover', this._onPlotlyHover);
         this.getPlot().removeListener('plotly_unhover', this._onPlotlyUnhover);
-        this.getPlot().removeListener('plotly_relayout', self._onPlotlyRelayout);
+        this.getPlot().removeListener('plotly_relayout', this._onPlotlyRelayout);
       }
 
       return;
