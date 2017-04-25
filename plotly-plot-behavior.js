@@ -195,7 +195,8 @@
        * - autoscale button clicked
        * - zoom button clicked
        * - drag zoom
-       * - pan: similar to drag zoom, but if you drag along an axis (the eventdata only contains information about the x-axis)
+       * - pan: similar to drag zoom, but if you drag along an axis (the eventdata only
+       * contains information about the x-axis)
        *
        * @event plotly_relayout
        * @see the {@link https://plot.ly/javascript/zoom-events/}
