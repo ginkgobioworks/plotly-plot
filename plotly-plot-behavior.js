@@ -155,7 +155,7 @@
       self._onPlotlyClick = function (data) {
         return self.fire('plotly-click', {data: data});
       };
-      
+
       /**
        * Custom plotly-specific event for tracking hovers on the chart.
        * Fires before the hover happens.
@@ -191,13 +191,17 @@
 
       /**
        * Custom plotly-specific event for binding to zoom events.
-       * Fires after zoom.
+       * Fires when:
+       * - autoscale button clicked
+       * - zoom button clicked
+       * - drag zoom
+       * - pan: similar to drag zoom, but if you drag along an axis (the eventdata only contains information about the x-axis)
        *
        * @event plotly_relayout
        * @see the {@link https://plot.ly/javascript/zoom-events/}
        */
       self._onPlotlyRelayout = function (data) {
-        return self.fire('plotly_relayout', {data: data});
+        return self.fire('plotly-relayout', {data: data});
       };
 
       return Plotly.newPlot(
