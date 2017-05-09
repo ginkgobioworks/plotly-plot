@@ -190,16 +190,15 @@
       };
 
       /**
-       * Custom plotly-specific event for binding to zoom events.
+       * Custom plotly-specific event for binding to relayout, e.g. on zoom events.
        * Fires when:
        * - autoscale button clicked
        * - zoom button clicked
-       * - drag zoom
-       * - pan: similar to drag zoom, but if you drag along an axis (the eventdata only
-       * contains information about the x-axis)
+       * - drag zooms
+       * - dragging an axis pans
        *
-       * @event plotly_relayout
-       * @see the {@link https://plot.ly/javascript/zoom-events/}
+       * @event plotly-relayout
+       * @see the {@link https://plot.ly/javascript/zoom-events/|zoom events tutorial}
        */
       self._onPlotlyRelayout = function (data) {
         return self.fire('plotly-relayout', {data: data});
