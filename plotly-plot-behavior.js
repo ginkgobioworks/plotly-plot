@@ -204,21 +204,21 @@
         return self.fire('plotly-relayout', {data: data});
       };
 
-      self._addListenerIfNotExists = function (plotDiv, type, listener) {
-        if (!plotDiv._ev._events[type]) {
-            plotDiv.on(type, listener);
-        }
-      };
+      self._addListenerIfNotExists = function(plotDiv, type, listener){
+		  if(!plotDiv._ev._events[type]) {
+			  plotDiv.on(type, listener);
+		  }
+	  };
 
       return Plotly.newPlot(
-          self.getPlot(), self.data, self.layout, self.config
+        self.getPlot(), self.data, self.layout, self.config
       ).then(function (plotDiv) {
-          self._addListenerIfNotExists(plotDiv, 'plotly_click', self._onPlotlyClick);
-          self._addListenerIfNotExists(plotDiv, 'plotly_beforehover', self._onPlotlyBeforehover);
-          self._addListenerIfNotExists(plotDiv, 'plotly_hover', self._onPlotlyHover);
-          self._addListenerIfNotExists(plotDiv, 'plotly_unhover', self._onPlotlyUnhover);
-          self._addListenerIfNotExists(plotDiv, 'plotly_relayout', self._onPlotlyRelayout);
-          return self;
+		  self._addListenerIfNotExists(plotDiv, 'plotly_click', self._onPlotlyClick);
+		  self._addListenerIfNotExists(plotDiv, 'plotly_beforehover', self._onPlotlyBeforehover);
+		  self._addListenerIfNotExists(plotDiv, 'plotly_hover', self._onPlotlyHover);
+		  self._addListenerIfNotExists(plotDiv, 'plotly_unhover', self._onPlotlyUnhover);
+		  self._addListenerIfNotExists(plotDiv, 'plotly_relayout', self._onPlotlyRelayout);
+        return self;
       });
     },
 
@@ -236,8 +236,6 @@
         this.getPlot().removeListener('plotly_unhover', this._onPlotlyUnhover);
         this.getPlot().removeListener('plotly_relayout', this._onPlotlyRelayout);
       }
-
-      return;
     },
 
 
